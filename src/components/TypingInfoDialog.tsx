@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { assameseScheme } from "@/data/assameseScheme";
+import { assameseSchema } from "@/utils/assameseSchema";
 
 const TypingInfoDialog: React.FC = () => {
   const consonantGrid = [
@@ -56,7 +56,7 @@ const TypingInfoDialog: React.FC = () => {
   const renderExceptions = () => {
     return (
       <div className="space-y-4">
-        {Object.entries(assameseScheme.exceptions).map(
+        {Object.entries(assameseSchema.exceptions).map(
           ([exceptionType, exceptions]) => (
             <div key={exceptionType}>
               <h4 className="text-lg font-semibold mb-2 capitalize">
@@ -142,35 +142,35 @@ const TypingInfoDialog: React.FC = () => {
             <h3 className="text-xl font-semibold mb-2">Consonants</h3>
             {renderCharacterGrid(
               consonantGrid.flat().filter(Boolean),
-              assameseScheme.consonants
+              assameseSchema.consonants
             )}
           </div>
           <div>
             <h3 className="text-xl font-semibold mb-2">Vowels</h3>
             {renderCharacterGrid(
-              Object.keys(assameseScheme.vowels),
-              assameseScheme.vowels
+              Object.keys(assameseSchema.vowels),
+              assameseSchema.vowels
             )}
           </div>
           <div>
             <h3 className="text-xl font-semibold mb-2">Vowel Marks</h3>
             {renderCharacterGrid(
-              Object.keys(assameseScheme.vowelMarks),
-              assameseScheme.vowelMarks
+              Object.keys(assameseSchema.vowelMarks),
+              assameseSchema.vowelMarks
             )}
           </div>
           <div>
             <h3 className="text-xl font-semibold mb-2">Special Characters</h3>
             {renderCharacterGrid(
-              Object.keys(assameseScheme.specialChar),
-              assameseScheme.specialChar
+              Object.keys(assameseSchema.specialChar),
+              assameseSchema.specialChar
             )}
           </div>
           <div>
             <h3 className="text-xl font-semibold mb-2">Digits</h3>
             {renderCharacterGrid(
-              Object.keys(assameseScheme.digits),
-              assameseScheme.digits
+              Object.keys(assameseSchema.digits),
+              assameseSchema.digits
             )}
           </div>
           <div>

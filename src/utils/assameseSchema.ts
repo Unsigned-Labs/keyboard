@@ -1,6 +1,6 @@
-import { TransliterationScheme } from "@/types/transliteration";
+import { TransliterationSchema } from "@/types/transliteration";
 
-export const assameseScheme: TransliterationScheme = {
+export const assameseSchema: TransliterationSchema = {
   consonants: {
     ক: ["k", "K"],
     খ: ["kh", "kH", "Kh", "KH"],

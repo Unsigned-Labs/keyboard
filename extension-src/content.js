@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { transliterate } = require("@/utils/transliteration");
-const { assameseScheme } = require("@/data/assameseScheme");
+const { assameseSchema } = require("@/utils/assameseSchema");
 
 let isEnabled = true;
 
@@ -14,13 +14,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Utility functions for character checks
 function isVowel(char) {
-  return Object.values(assameseScheme.vowels)
+  return Object.values(assameseSchema.vowels)
     .flat()
     .includes(char.toLowerCase());
 }
 
 function isConsonant(char) {
-  return Object.values(assameseScheme.consonants)
+  return Object.values(assameseSchema.consonants)
     .flat()
     .includes(char.toLowerCase());
 }
@@ -52,17 +52,17 @@ function processTransliteration(target) {
     if (i + 1 < input.length) {
       const twoCharChunk = input.slice(i, i + 2);
       if (
-        Object.values(assameseScheme.consonants)
+        Object.values(assameseSchema.consonants)
           .flat()
           .includes(twoCharChunk) ||
-        Object.values(assameseScheme.vowels).flat().includes(twoCharChunk)
+        Object.values(assameseSchema.vowels).flat().includes(twoCharChunk)
       ) {
         chunk = twoCharChunk;
         nextChar = i + 2 < input.length ? input[i + 2] : "";
       }
     }
 
-    let transliterated = transliterate(chunk, assameseScheme);
+    let transliterated = transliterate(chunk, assameseSchema);
 
     // Handle vowel marks and combining with preceding consonants
     if (
@@ -71,7 +71,7 @@ function processTransliteration(target) {
       isConsonant(output[output.length - 1])
     ) {
       const prevChar = output[output.length - 1];
-      const combined = transliterate(prevChar + chunk, assameseScheme);
+      const combined = transliterate(prevChar + chunk, assameseSchema);
       if (combined.length === 1) {
         output = output.slice(0, -1) + combined;
       } else {
@@ -83,7 +83,7 @@ function processTransliteration(target) {
 
     // Handle explicit holonto (virama) for joining consonants
     if (nextChar === "." && chunk !== ".") {
-      output += assameseScheme.exceptions.explicitHolonto;
+      output += assameseSchema.exceptions.explicitHolonto;
       i++; // Skip the dot character
     }
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { transliterate } from "@/utils/transliteration";
-import { assameseScheme } from "@/data/assameseScheme";
+import { assameseSchema } from "@/utils/assameseSchema";
 import Header from "./Header";
 import InputSection from "./InputSection";
 import OutputSection from "./OutputSection";
@@ -13,7 +13,7 @@ const Keyboard: React.FC = () => {
   const [output, setOutput] = useState<string>("");
 
   const updateOutput = useCallback(() => {
-    setOutput(transliterate(input, assameseScheme));
+    setOutput(transliterate(input, assameseSchema));
   }, [input]);
 
   useEffect(() => {
@@ -21,12 +21,12 @@ const Keyboard: React.FC = () => {
   }, [updateOutput]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newInput = e.target.value;
-    setInput(newInput);
+    setInput(e.target.value);
   };
 
   const clearInput = () => {
     setInput("");
+    setOutput("");
   };
 
   return (

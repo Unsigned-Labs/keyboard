@@ -1,4 +1,4 @@
-export type TransliterationScheme = {
+export type TransliterationSchema = {
   consonants: { [key: string]: string[] };
   vowels: { [key: string]: string[] };
   vowelMarks: { [key: string]: string[] };
