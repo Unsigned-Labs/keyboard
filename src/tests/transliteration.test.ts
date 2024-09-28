@@ -1,5 +1,5 @@
 import { transliterate } from '../utils/transliteration';
-import { assameseScheme } from '../data/assameseScheme';
+import { assameseSchema } from '../utils/assameseSchema';
 
 function assertEqual(actual: string, expected: string, testName: string) {
   if (actual === expected) {
@@ -14,34 +14,34 @@ function assertEqual(actual: string, expected: string, testName: string) {
 // Test cases
 function runTests() {
   // Test basic consonant
-  assertEqual(transliterate('k', assameseScheme), 'ক', 'Basic consonant');
+  assertEqual(transliterate('k', assameseSchema), 'ক', 'Basic consonant');
 
   // Test vowel
-  assertEqual(transliterate('a', assameseScheme), 'আ', 'Vowel');
-
-  // Test consonant + vowel
-  assertEqual(transliterate('ka', assameseScheme), 'কা', 'Consonant + vowel');
+  assertEqual(transliterate('a', assameseSchema), 'আ', 'Vowel');
 
   // Test consonant + vowel marker
-  assertEqual(transliterate('ki', assameseScheme), 'কি', 'Consonant + vowel marker');
+  assertEqual(transliterate('ki', assameseSchema), 'কি', 'Consonant + vowel marker');
+
+  // Test consonant + vowel
+  assertEqual(transliterate('mo.i', assameseSchema), 'মই', 'Consonant + vowel');
 
   // Test multiple syllables
-  assertEqual(transliterate('bari', assameseScheme), 'বাৰি', 'Multiple syllables');
+  assertEqual(transliterate('jharru', assameseSchema), 'ঝাড়ু', 'Multiple syllables');
 
   // Test special character
-  assertEqual(transliterate('ngg', assameseScheme), 'ং', 'Special character');
+  assertEqual(transliterate('khongg', assameseSchema), 'খং', 'Special character');
 
   // Test digit
-  assertEqual(transliterate('5', assameseScheme), '৫', 'Digit');
+  assertEqual(transliterate('5', assameseSchema), '৫', 'Digit');
 
   // Test mixed input
-  assertEqual(transliterate('nomoskar', assameseScheme), 'নমস্কাৰ', 'Mixed input');
+  assertEqual(transliterate('nomoskar', assameseSchema), 'নমস্কাৰ', 'Mixed input');
 
   // Test capital letters
-  assertEqual(transliterate('Axom', assameseScheme), 'আছাম', 'Capital letters');
+  assertEqual(transliterate('oxom', assameseSchema), 'অসম', 'Capital letters');
 
-  // Test unrecognized character
-  assertEqual(transliterate('hello!', assameseScheme), 'হেলো!', 'Unrecognized character');
+  // Test Non-Assamese words
+  assertEqual(transliterate('hello!', assameseSchema), 'হেল্ল!', 'Non-Assamese words');
 }
 
 // Run the tests

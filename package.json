@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "build:extension": "node scripts/build-extension.js",
-    "package:extension": "npm run build:extension && scripts/package-extension.js"
+    "package:extension": "npm run build:extension && scripts/package-extension.js",
+    "compile:tests": "tsc -p tsconfig.test.json",
+    "test": "npm run compile:tests && node test-out/tests/transliteration.test.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.1",

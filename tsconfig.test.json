@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./test-out",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "noEmitOnError": false,
+    "strict": false,
+    "noImplicitAny": false,
+  },
+  "include": ["src/tests/*.ts", "src/tests/*.tsx"],
+  "exclude": ["node_modules"]
+}

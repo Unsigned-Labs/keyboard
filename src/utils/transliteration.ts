@@ -1,8 +1,8 @@
-import { TransliterationScheme } from "@/types/transliteration";
+import { TransliterationSchema } from "@/types/transliteration";
 
 export function transliterate(
   input: string,
-  scheme: TransliterationScheme
+  scheme: TransliterationSchema
 ): string {
   let output = "";
   let i = 0;
@@ -32,7 +32,7 @@ export function transliterate(
 function processNextCharacter(
   input: string,
   index: number,
-  scheme: TransliterationScheme,
+  scheme: TransliterationSchema,
   previousCharWasConsonant: boolean,
   skipNextCombination: boolean,
   inBackticks: boolean
@@ -143,7 +143,7 @@ function handleBackticks(
 function handleRegularTransliteration(
   input: string,
   index: number,
-  scheme: TransliterationScheme,
+  scheme: TransliterationSchema,
   previousCharWasConsonant: boolean,
   skipNextCombination: boolean
 ) {
@@ -179,16 +179,16 @@ function handleRegularTransliteration(
 function findLongestMatch(
   input: string,
   index: number,
-  scheme: TransliterationScheme,
+  scheme: TransliterationSchema,
   skipNextCombination: boolean
 ): {
   longestMatch: string;
   matchedChar: string;
-  matchedCategory: keyof TransliterationScheme | null;
+  matchedCategory: keyof TransliterationSchema | null;
 } {
   let longestMatch = "";
   let matchedChar = "";
-  let matchedCategory: keyof TransliterationScheme | null = null;
+  let matchedCategory: keyof TransliterationSchema | null = null;
 
   for (const category of [
     "consonants",
@@ -219,8 +219,8 @@ function processMatch(
   input: string,
   index: number,
   matchedChar: string,
-  matchedCategory: keyof TransliterationScheme | null,
-  scheme: TransliterationScheme,
+  matchedCategory: keyof TransliterationSchema | null,
+  scheme: TransliterationSchema,
   previousCharWasConsonant: boolean,
   skipNextCombination: boolean,
   longestMatch: string
@@ -285,7 +285,7 @@ function processMatch(
 function findNextConsonant(
   input: string,
   startIndex: number,
-  scheme: TransliterationScheme
+  scheme: TransliterationSchema
 ): string | null {
   for (let i = startIndex; i < input.length; i++) {
     const { matchedChar, matchedCategory } = findLongestMatch(
