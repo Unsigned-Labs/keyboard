@@ -3,8 +3,8 @@ const { transliterate } = require("@/utils/transliteration");
 const { assameseSchema } = require("@/utils/assameseSchema");
 
 let isEnabled = true;
+const debugMode = window.location.hostname === "localhost";
 
-// Listen for state changes from the background script
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "stateChanged") {
@@ -12,21 +12,41 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// Utility functions for character checks
-function isVowel(char) {
-  return Object.values(assameseSchema.vowels)
-    .flat()
-    .includes(char.toLowerCase());
-}
-
-function isConsonant(char) {
-  return Object.values(assameseSchema.consonants)
-    .flat()
-    .includes(char.toLowerCase());
-}
-
-// Debounced input handler to improve transliteration efficiency
 let debounceTimer;
+let currentTransliteratedWord = "";
+let modalElement = null;
+
+function createModal() {
+  modalElement = document.createElement("div");
+  modalElement.style.cssText = `
+    position: absolute;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: none;
+    z-index: 10000;
+  `;
+  document.body.appendChild(modalElement);
+}
+
+function showModal(target, text) {
+  if (!modalElement) createModal();
+
+  const rect = target.getBoundingClientRect();
+  modalElement.style.left = `${rect.left}px`;
+  modalElement.style.top = `${rect.top - 30}px`; // 30px above the input
+  modalElement.textContent = text;
+  modalElement.style.display = "block";
+}
+
+function hideModal() {
+  if (modalElement) {
+    modalElement.style.display = "none";
+  }
+}
 
 function handleInput(event) {
   if (!isEnabled) return;
@@ -35,72 +55,66 @@ function handleInput(event) {
   if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") return;
 
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => processTransliteration(target), 200);
+  debounceTimer = setTimeout(() => processTransliteration(target), 50);
 }
 
 function processTransliteration(target) {
-  const cursorPosition = target.selectionStart;
-  const input = target.value;
-  let output = "";
-  let i = 0;
+  const currentInput = target.value;
+  const words = currentInput.split(" ");
+  const lastWord = words[words.length - 1];
 
-  while (i < input.length) {
-    let chunk = input[i];
-    let nextChar = i + 1 < input.length ? input[i + 1] : "";
-
-    // Check for compound characters (vowels or consonants)
-    if (i + 1 < input.length) {
-      const twoCharChunk = input.slice(i, i + 2);
-      if (
-        Object.values(assameseSchema.consonants)
-          .flat()
-          .includes(twoCharChunk) ||
-        Object.values(assameseSchema.vowels).flat().includes(twoCharChunk)
-      ) {
-        chunk = twoCharChunk;
-        nextChar = i + 2 < input.length ? input[i + 2] : "";
-      }
-    }
-
-    let transliterated = transliterate(chunk, assameseSchema);
-
-    // Handle vowel marks and combining with preceding consonants
-    if (
-      isVowel(chunk[0]) &&
-      output.length > 0 &&
-      isConsonant(output[output.length - 1])
-    ) {
-      const prevChar = output[output.length - 1];
-      const combined = transliterate(prevChar + chunk, assameseSchema);
-      if (combined.length === 1) {
-        output = output.slice(0, -1) + combined;
-      } else {
-        output += transliterated;
-      }
-    } else {
-      output += transliterated;
-    }
-
-    // Handle explicit holonto (virama) for joining consonants
-    if (nextChar === "." && chunk !== ".") {
-      output += assameseSchema.exceptions.explicitHolonto;
-      i++; // Skip the dot character
-    }
-
-    i += chunk.length;
+  if (lastWord === "") {
+    currentTransliteratedWord = "";
+    hideModal();
+  } else {
+    currentTransliteratedWord = transliterate(lastWord, assameseSchema);
+    showModal(target, currentTransliteratedWord);
   }
 
-  target.value = output;
-
-  // Adjust cursor position to maintain user experience
-  const newPosition = cursorPosition + (output.length - input.length);
-  target.setSelectionRange(newPosition, newPosition);
+  if (debugMode) {
+    console.log("Input:", currentInput);
+    console.log("Transliterated:", currentTransliteratedWord);
+  }
 }
 
-// Attach event listener to handle input events
-document.addEventListener("input", handleInput);
+function handleKeyDown(event) {
+  if (!isEnabled) return;
 
-// Request initial state from background script
+  const target = event.target;
+  if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") return;
+
+  if (event.key === " " && currentTransliteratedWord) {
+    event.preventDefault();
+
+    const currentValue = target.value;
+    const words = currentValue.split(" ");
+    words[words.length - 1] = currentTransliteratedWord;
+
+    const newValue = words.join(" ") + " ";
+    target.value = newValue;
+
+    // Set cursor position to the end
+    target.setSelectionRange(newValue.length, newValue.length);
+
+    currentTransliteratedWord = "";
+    hideModal();
+
+    if (debugMode) {
+      console.log("Replaced with:", newValue);
+    }
+  }
+}
+
+document.addEventListener("input", handleInput);
+document.addEventListener("keydown", handleKeyDown);
+
+// Hide modal when clicking outside of inputs
+document.addEventListener("click", (event) => {
+  if (event.target.tagName !== "INPUT" && event.target.tagName !== "TEXTAREA") {
+    hideModal();
+  }
+});
+
 chrome.runtime.sendMessage({ action: "getState" }, (response) => {
   isEnabled = response?.isEnabled ?? true;
 });

@@ -17,7 +17,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Unsigned Keyboard",
-  description: "Write Assamese and other languages online",
+  description: "Write Assamese online",
 };
 
 export default function RootLayout({

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Extension Test Page</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .input-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      .contenteditable-placeholder {
+        color: #999;
+      }
+      .contenteditable {
+        border: 1px solid #ccc;
+        padding: 10px;
+        min-height: 100px;
+        box-sizing: border-box;
+      }
+      ::placeholder,
+      .contenteditable[contenteditable="true"]::before {
+        font-size: 16px;
+        letter-spacing: 1px;
+        font-family: Arial, sans-serif;
+      }
+      .contenteditable[contenteditable="true"]::before {
+        content: attr(placeholder);
+        color: #999;
+        font-size: 16px;
+      }
+      .contenteditable:focus::before {
+        content: "";
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Extension Test Page</h1>
+
+    <p>
+      This is a simple test page to test the functionality of the browser
+      extension. Make sure the extension is installed and enabled.
+    </p>
+
+    <div class="input-group">
+      <label for="single-line">Single Line Input:</label>
+      <input type="text" id="single-line" placeholder="Type here..." />
+    </div>
+
+    <div class="input-group">
+      <label for="multi-line">Multi-line Input:</label>
+      <textarea id="multi-line" rows="4" placeholder="Type here..."></textarea>
+    </div>
+
+    <div class="input-group">
+      <label for="contenteditable">Contenteditable Div:</label>
+      <div
+        id="contenteditable"
+        class="contenteditable contenteditable-placeholder"
+        contenteditable="true"
+        placeholder="Type here..."
+      ></div>
+    </div>
+
+    <script>
+      // This script is just to clear the placeholder text when focusing on the contenteditable div
+      document
+        .getElementById("contenteditable")
+        .addEventListener("focus", function () {
+          if (this.textContent.trim() === "Type here...") {
+            this.textContent = "";
+            this.classList.remove("contenteditable-placeholder");
+          }
+        });
+
+      document
+        .getElementById("contenteditable")
+        .addEventListener("blur", function () {
+          if (this.textContent.trim() === "") {
+            this.textContent = "Type here...";
+            this.classList.add("contenteditable-placeholder");
+          }
+        });
+    </script>
+  </body>
+</html>

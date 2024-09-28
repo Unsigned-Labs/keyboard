@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Your Extension Name",
+    "name": "অসমীয়া কিব’ৰ্ড by Unsigned",
     "version": "1.0",
-    "description": "Your extension description",
+    "description": "Write Assamese online",
     "background": {
         "service_worker": "background.js"
     },

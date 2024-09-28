@@ -25,3 +25,5 @@ npm run extension:package
 ```
 
 This will generate the zipped version of the built extension and place it inside of `public`.
+
+You can go to [http://localhost:3000/test.html](http://localhost:3000/test.html) to test out the extension

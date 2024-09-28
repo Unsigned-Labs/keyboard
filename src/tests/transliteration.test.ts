@@ -40,8 +40,11 @@ function runTests() {
   // Test capital letters
   assertEqual(transliterate('oxom', assameseSchema), 'অসম', 'Capital letters');
 
-  // Test Non-Assamese words
+  // Test non-Assamese words
   assertEqual(transliterate('hello!', assameseSchema), 'হেল্ল!', 'Non-Assamese words');
+
+  // Test a full sentence
+  assertEqual(transliterate('kene khobor apoonar?', assameseSchema), 'কেনে খবৰ আপোনাৰ?', 'Full sentence');
 }
 
 // Run the tests
