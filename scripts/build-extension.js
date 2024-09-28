@@ -6,7 +6,7 @@ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const rootDir = path.join(__dirname, '..');
 const srcDir = path.join(rootDir, 'src');
-const extensionSrcDir = path.join(rootDir, 'extension');
+const extensionSrcDir = path.join(rootDir, 'extension-src');
 const outputDir = path.join(rootDir, 'extension-dist');
 
 // Ensure output directory exists and is empty

@@ -29,38 +29,6 @@ export function transliterate(
   return output;
 }
 
-export function createExtensionTransliterator(scheme: TransliterationScheme) {
-  let previousInput = "";
-  let previousCharWasConsonant = false;
-  let skipNextCombination = false;
-  let inBackticks = false;
-
-  return function (newChar: string): string {
-    const input = previousInput + newChar;
-    let output = "";
-    let i = previousInput.length;
-
-    while (i < input.length) {
-      const result = processNextCharacter(
-        input,
-        i,
-        scheme,
-        previousCharWasConsonant,
-        skipNextCombination,
-        inBackticks
-      );
-      output += result.output;
-      i = result.newIndex;
-      previousCharWasConsonant = result.previousCharWasConsonant;
-      skipNextCombination = result.skipNextCombination;
-      inBackticks = result.inBackticks;
-    }
-
-    previousInput = input;
-    return output;
-  };
-}
-
 function processNextCharacter(
   input: string,
   index: number,

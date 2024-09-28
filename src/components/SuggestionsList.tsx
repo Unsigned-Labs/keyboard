@@ -13,14 +13,14 @@ const SuggestionsList: React.FC<SuggestionsListProps> = ({
   if (suggestions.length === 0) return null;
 
   return (
-    <div className="mt-4 flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2">
       {suggestions.map((word, index) => (
         <Button
           key={index}
           variant="outline"
           size="sm"
           onClick={() => applySuggestion(word)}
-          className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"
         >
           {word}
         </Button>

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
@@ -92,23 +93,26 @@ const TypingInfoDialog: React.FC = () => {
           How to Use the Keyboard:
         </h3>
         <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
-          <li> ঁ লিখিবলৈ * (এষ্টাৰিক্স) ব্যৱহাৰ কৰক।</li>
           <li>
-            কোনো এটা ইংৰাজি শব্দ ইংৰাজিতে ৰাখিবলৈ, তাক বেকটিক্স (`)ৰে আৱৰি ৰাখক।
+            কোনো এটা স্বৰবৰ্ণক কোনো ব্যঞ্জনবৰ্ণৰ পাছত বৰ্ণ হিচাপেই লিখিবলৈ হ'লে
+            fullstop ৰ ব্যবহাৰ কৰক। উদাহৰণ স্বৰূপে: 'moi' বুলি লিখিলে মৈ বুলি
+            দেখা পাব, কিন্তু মই বুলি লিখিব হ'লে 'm.i' 'mo.i বুলি লিখিব লাগিব{" "}
+          </li>
+          <li> ঁ (চন্দ্ৰবিন্দু) লিখিবলৈ * (এষ্টৰিক্স) ব্যৱহাৰ কৰক।</li>
+          <li>
+            কোনো এটা ইংৰাজি শব্দ ইংৰাজিতে ৰাখিবলৈ, তাক বেকটিক (`)ৰে আৱৰি ৰাখক।
           </li>
           <li>
             বৰ্ণবোৰ হলন্ত (্) ব্যৱহাৰ নকৰাকৈয়ে স্বয়ংক্ৰিয়ভাৱে সংযোগ হয়।
+            বৰ্ণবোৰ সংযোগ নকৰাকৈ লিখিবলৈ 'o' ব্যৱহাৰ কৰক। উদাহৰণস্বৰূপ: 'tejpur'
+            বুলি লিখিলে তেজ্পুৰ, আৰু 'tejopur' বুলি লিখিলে তেজপুৰ বুলি দেখুৱাব।
           </li>
-          <li>
-            বৰ্ণবোৰ সংযোগ নকৰাকৈ লিখিবলৈ &apos;o&apos; ব্যৱহাৰ কৰক।
-            উদাহৰণস্বৰূপ: &apos;tejpur&apos; বুলি লিখিলে তেজ্পুৰ, আৰু
-            &apos;tejopur&apos; বুলি লিখিলে তেজপুৰ বুলি দেখুৱাব।
-          </li>
-          <li> । (দাৰি) ডাল লিখিবলৈ &apos;|&apos; ব্যৱহাৰ কৰক।</li>
+          <li> । (দাৰি) ডাল লিখিবলৈ '|' ব্যৱহাৰ কৰক।</li>
           <li>
             একেটা উচ্চাৰণৰে অন্য এটা বৰ্ণ পাবৰ বাবে shift ৰ ব্যৱহাৰ কৰক, নাইবা
-            একেটা বৰ্ণকে একাধিকবাৰ টিপক । উদাহৰণস্বৰূপ: ত লিখিবলৈ t, আৰু ট
-            লিখিবলৈ T বা tt টিপক।
+            একেটা বৰ্ণকে একাধিকবাৰ টিপক । উদাহৰণস্বৰূপ: ত-টো লিখিবলৈ t, আৰু ট-টো
+            লিখিবলৈ T, বা স, শ, আৰু ষ লিখিবৰ বাবে x, xx, আৰু xxx ৰ ব্যবহাৰ কৰিব
+            পাৰে।
           </li>
         </ul>
       </div>
@@ -118,7 +122,11 @@ const TypingInfoDialog: React.FC = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button
+          variant="outline"
+          size="icon"
+          className="border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
           <Info className="h-5 w-5" />
         </Button>
       </DialogTrigger>

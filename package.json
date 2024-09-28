@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build:extension": "node scripts/build-extension.js"
+    "build:extension": "node scripts/build-extension.js",
+    "package:extension": "npm run build:extension && scripts/package-extension.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.1",
@@ -33,6 +34,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "archiver": "^7.0.1",
     "babel-loader": "^9.2.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.13",

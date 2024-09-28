@@ -6,13 +6,17 @@ export const updateSuggestions = (
   value: string,
   schema: TransliterationScheme
 ): string[] => {
-  const transliteratedInput = transliterate(value, schema);
+  const words = value.trim().split(/\s+/);
+  const lastWord = words[words.length - 1];
+  const transliteratedInput = transliterate(lastWord, schema);
   const wordList = commonAssameseWords;
 
   const suggestionWordLimit = 5;
 
   const matchedSuggestions = wordList
-    .filter((word) => word.startsWith(transliteratedInput))
+    .filter((word) =>
+      word.toLowerCase().startsWith(transliteratedInput.toLowerCase())
+    )
     .slice(0, suggestionWordLimit);
 
   return matchedSuggestions;
@@ -40,7 +44,8 @@ export const generateRomanizations = (
   word: string,
   schema: TransliterationScheme
 ): string[] => {
-  const romanizations: string[] = [""];
+  let romanizations: string[] = [""];
+  const maxCombinations = 1000;
 
   for (const char of word) {
     const options = getRomanizationOptions(char, schema);
@@ -49,10 +54,13 @@ export const generateRomanizations = (
     for (const option of options) {
       for (const romanization of romanizations) {
         newRomanizations.push(romanization + option);
+        if (newRomanizations.length >= maxCombinations) {
+          return newRomanizations;
+        }
       }
     }
 
-    romanizations.splice(0, romanizations.length, ...newRomanizations);
+    romanizations = newRomanizations;
   }
 
   return romanizations;
@@ -62,13 +70,17 @@ export const getReverseSuggestions = (
   value: string,
   schema: TransliterationScheme
 ): string[] => {
+  const words = value.trim().split(/\s+/);
+  const lastWord = words[words.length - 1];
   const wordList = commonAssameseWords;
   const suggestionWordLimit = 5;
 
   const matchedSuggestions = wordList
     .filter((word) => {
       const romanizations = generateRomanizations(word, schema);
-      return romanizations.some((rom) => rom.startsWith(value));
+      return romanizations.some((rom) =>
+        rom.toLowerCase().startsWith(lastWord.toLowerCase())
+      );
     })
     .slice(0, suggestionWordLimit);
 
