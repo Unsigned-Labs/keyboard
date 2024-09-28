@@ -28,6 +28,8 @@ function createModal() {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     display: none;
     z-index: 10000;
+    color: #000;
+    font-family: Arial, sans-serif;
   `;
   document.body.appendChild(modalElement);
 }
@@ -93,7 +95,6 @@ function handleKeyDown(event) {
     const newValue = words.join(" ") + " ";
     target.value = newValue;
 
-    // Set cursor position to the end
     target.setSelectionRange(newValue.length, newValue.length);
 
     currentTransliteratedWord = "";
@@ -108,7 +109,6 @@ function handleKeyDown(event) {
 document.addEventListener("input", handleInput);
 document.addEventListener("keydown", handleKeyDown);
 
-// Hide modal when clicking outside of inputs
 document.addEventListener("click", (event) => {
   if (event.target.tagName !== "INPUT" && event.target.tagName !== "TEXTAREA") {
     hideModal();
