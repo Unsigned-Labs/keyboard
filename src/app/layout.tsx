@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -16,36 +18,24 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Unsigned Keyboard",
+  title: "অসমীয়া কিব'ৰ্ড by Unsigned",
   description: "Write Assamese online",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <head>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              function getInitialTheme() {
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme) return savedTheme;
-                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-              }
-              document.documentElement.classList.add(getInitialTheme());
-            })();
-          `
-        }} />
-      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}
       >
         <ThemeProvider>
-          {children}
+          <Header />
+          <main className="flex-grow">{children}</main>
+          <Footer />
           <Toaster />
         </ThemeProvider>
       </body>
