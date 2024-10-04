@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
-import { Sun, Moon, Keyboard, Puzzle, Menu, X } from "lucide-react";
+import { Sun, Moon, Keyboard, Puzzle, Menu, X, Info } from "lucide-react";
 import UnsignedLogoDark from "@/assets/unsigned-logo-dark.png";
 import UnsignedLogoLight from "@/assets/unsigned-logo-light.png";
 import Image from "next/image";
@@ -27,9 +27,7 @@ const Header: React.FC = () => {
                 অসমীয়া কিব’ৰ্ড
               </h1>
               <div className="flex items-center gap-1 sm:gap-2 mt-1">
-                <span className="italic text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-                  by
-                </span>
+                <span className="italic text-xs sm:text-sm text-gray-600 dark:text-gray-300">by</span>
                 <Image
                   src={theme === "dark" ? UnsignedLogoDark : UnsignedLogoLight}
                   alt="Unsigned Logo"
@@ -45,11 +43,7 @@ const Header: React.FC = () => {
                 onClick={toggleMobileMenu}
                 className="border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                {isMobileMenuOpen ? (
-                  <X className="h-5 w-5" />
-                ) : (
-                  <Menu className="h-5 w-5" />
-                )}
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
             </div>
           </div>
@@ -62,9 +56,10 @@ const Header: React.FC = () => {
               href="/typing-info"
               className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
             >
-              <Keyboard className="h-5 w-5 mr-2" />
+              <Info className="h-5 w-5 mr-2" />
               <span>Typing Guide</span>
             </Link>
+
             <Link
               href="/extension"
               className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
@@ -72,17 +67,22 @@ const Header: React.FC = () => {
               <Puzzle className="h-5 w-5 mr-2" />
               <span>Extension</span>
             </Link>
+
+            <Link
+              href="/typing-practice"
+              className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+            >
+              <Keyboard className="h-5 w-5 mr-2" />
+              <span>Typing Practice</span>
+            </Link>
+
             <Button
               variant="outline"
               size="icon"
               onClick={toggleTheme}
               className="border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
             >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
+              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
           </nav>
         </div>
