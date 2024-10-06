@@ -10,7 +10,7 @@ import { TransliterationSchema } from "@/types/transliteration";
 import { PracticeLevel, getPracticeLevels } from "@/utils/typingPracticeLevels";
 import { ArrowLeft, ArrowRight, RotateCw } from "lucide-react";
 
-export const TypingPractice: React.FC = () => {
+const TypingPractice: React.FC = () => {
   const [levels, setLevels] = useState<PracticeLevel[]>([]);
   const [currentLevelIndex, setCurrentLevelIndex] = useState<number | null>(null);
   const [isStarted, setIsStarted] = useState(false);
