@@ -2,32 +2,23 @@
 <html lang="as">
   <head>
     <meta charset="UTF-8" />
-    <title>অসমীয়া কিব'ৰ্ড by Unsigned</title>
-    <link rel="stylesheet" type="text/css" href="styles.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
+    <title>অসমীয়া কিব’ৰ্ড by Unsigned</title>
+    <link rel="stylesheet" type="text/css" href="globals.css" />
+    <style>
+      body {
+        width: 384px;
+        min-height: 400px;
+        margin: 0;
+        padding: 0;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
   </head>
   <body>
-    <div class="container">
-      <h1>অসমীয়া কিব'ৰ্ড</h1>
-      <div class="toggle-container">
-        <label class="switch">
-          <input type="checkbox" id="toggleSwitch" />
-          <span class="slider round"></span>
-        </label>
-        <p id="status">Enabled</p>
-      </div>
-    </div>
-    <footer class="footer">
-      <p>
-        Made with <span class="heart">&#10084;</span> by
-        <a href="https://unsigned.in" target="_blank" rel="noopener noreferrer">
-          Team Unsigned
-        </a>
-      </p>
-    </footer>
+    <div id="root"></div>
     <script src="popup.js"></script>
   </body>
 </html>
