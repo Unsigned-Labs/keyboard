@@ -18,7 +18,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "অসমীয়া কিব'ৰ্ড by Unsigned",
+  title: "অসমীয়া কীব’ৰ্ড by Unsigned",
   description: "Write Assamese online",
 };
 
