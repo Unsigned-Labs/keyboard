@@ -16,7 +16,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4 py-4 sm:px-6 sm:py-5 flex justify-between items-center">
         <div className="flex flex-col">
           <h1 className="text-xl sm:text-3xl font-extrabold text-gray-900 dark:text-white hover:text-orange-300 dark:hover:text-purple-300 transition-colors">
-            অসমীয়া কিব’ৰ্ড
+            অসমীয়া কীব’ৰ্ড
           </h1>
           <span className="text-sm text-gray-600 dark:text-gray-400">
             by <span className="font-semibold">Unsigned</span>

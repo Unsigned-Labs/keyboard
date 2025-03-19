@@ -29,7 +29,7 @@ const PopupContent: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex flex-col">
             <h1 className="text-xl sm:text-3xl font-extrabold hover:text-orange-300 dark:hover:text-purple-300 transition-colors">
-              অসমীয়া কিব’ৰ্ড
+              অসমীয়া কীব’ৰ্ড
             </h1>
             <span className="text-sm text-gray-600 dark:text-gray-400">
               by <span className="font-semibold">Unsigned</span>

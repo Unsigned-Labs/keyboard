@@ -103,7 +103,7 @@ const ExtensionPage: React.FC = () => {
   return (
     <>
       <Head>
-        <title>Browser Extension - অসমীয়া কিব’ৰ্ড</title>
+        <title>Browser Extension - অসমীয়া কীব’ৰ্ড</title>
       </Head>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">

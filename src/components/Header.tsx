@@ -24,7 +24,7 @@ const Header: React.FC = () => {
           <div className="flex justify-between items-center w-full sm:w-auto">
             <Link href="/" className="flex flex-col items-start">
               <h1 className="text-xl sm:text-3xl font-extrabold text-gray-900 dark:text-white hover:text-orange-300 dark:hover:text-purple-300 transition-colors">
-                অসমীয়া কিব’ৰ্ড
+                অসমীয়া কীব’ৰ্ড
               </h1>
               <div className="flex items-center gap-1 sm:gap-2 mt-1">
                 <span className="italic text-xs sm:text-sm text-gray-600 dark:text-gray-300">by</span>
