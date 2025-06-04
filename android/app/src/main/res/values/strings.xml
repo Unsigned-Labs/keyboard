@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Assamese Keyboard</string>
+    <string name="keyboard_name">অসমীয়া কীবʼৰ্ড</string>
+    <string name="instruction_text">To use the Assamese keyboard, please enable it in your device settings.</string>
+    <string name="enable_button">Enable Keyboard</string>
+</resources>

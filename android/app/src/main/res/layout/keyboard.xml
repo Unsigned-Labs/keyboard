@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.inputmethodservice.KeyboardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/keyboard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:keyTextColor="#333333"
+    android:keyTextSize="22sp"
+    android:shadowColor="#80000000"
+    android:shadowRadius="2.75"
+    android:background="#E8E8E8" />
