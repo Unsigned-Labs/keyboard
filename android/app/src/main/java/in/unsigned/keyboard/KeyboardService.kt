@@ -12,6 +12,7 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
     private var keyboard: Keyboard? = null
     private var isShiftPressed = false
     private var inputBuffer = StringBuilder()
+    private var lastCommittedLength = 0  // Track how many characters we've committed
     private val transliterator = Transliterator()
     private var isAssameseMode = true
     private var isSymbolsMode = false
@@ -42,6 +43,9 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
 
     private fun handleNumber(primaryCode: Int) {
         if (isAssameseMode) {
+            // Flush any pending transliteration first
+            flushBuffer()
+            
             // Convert to Assamese digits
             val assameseDigit = when (primaryCode) {
                 48 -> "০" // 0
@@ -71,15 +75,22 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
             // Add to buffer for transliteration
             inputBuffer.append(charToAdd)
             
-            // Transliterate the entire buffer
+            // Transliterate the current buffer
             val transliterated = transliterator.transliterate(inputBuffer.toString())
             
-            // Replace the current buffer content with transliterated result
-            if (transliterated.isNotEmpty()) {
-                // Delete previous buffer content and insert new transliterated text
-                currentInputConnection?.deleteSurroundingText(inputBuffer.length - 1, 0)
-                currentInputConnection?.commitText(transliterated, 1)
+            // Calculate how much we need to update
+            val newLength = transliterated.length
+            val toDelete = lastCommittedLength
+            val toAdd = transliterated
+            
+            // Delete previous committed text and commit new transliterated text
+            if (toDelete > 0) {
+                currentInputConnection?.deleteSurroundingText(toDelete, 0)
             }
+            currentInputConnection?.commitText(toAdd, 1)
+            
+            // Update our tracking
+            lastCommittedLength = newLength
         } else {
             // English mode - direct character input
             currentInputConnection?.commitText(charToAdd.toString(), 1)
@@ -100,20 +111,27 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
 
     private fun handlePeriod() {
         if (isAssameseMode) {
+            // Add period to buffer and try to transliterate
             inputBuffer.append(".")
-
-            val result = transliterator.transliterateBuffer(inputBuffer.toString())
-
-            if (result.transliterated.isNotEmpty()) {
-                val charsToDelete = result.consumed
-                if (charsToDelete > 1) {
-                    currentInputConnection?.deleteSurroundingText(charsToDelete - 1, 0)
-                }
-                currentInputConnection?.commitText(result.transliterated, 1)
+            
+            val transliterated = transliterator.transliterate(inputBuffer.toString())
+            
+            // Replace previous committed text with new transliterated text
+            val toDelete = lastCommittedLength
+            if (toDelete > 0) {
+                currentInputConnection?.deleteSurroundingText(toDelete, 0)
+            }
+            currentInputConnection?.commitText(transliterated, 1)
+            
+            // Update tracking
+            lastCommittedLength = transliterated.length
+            
+            // If the period was consumed in transliteration, we're done
+            // If not, we need to clear buffer and add period separately
+            if (!transliterated.endsWith(".")) {
+                // Period was consumed in transliteration, clear buffer
                 inputBuffer.clear()
-                inputBuffer.append(result.remaining)
-            } else {
-                currentInputConnection?.commitText(".", 1)
+                lastCommittedLength = transliterated.length
             }
         } else {
             currentInputConnection?.commitText(".", 1)
@@ -129,9 +147,34 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
 
     private fun handleBackspace() {
         if (isAssameseMode && inputBuffer.isNotEmpty()) {
+            // Remove last character from buffer
             inputBuffer.deleteCharAt(inputBuffer.length - 1)
+            
+            if (inputBuffer.isEmpty()) {
+                // Buffer is empty, just delete normally
+                currentInputConnection?.deleteSurroundingText(1, 0)
+                lastCommittedLength = 0
+            } else {
+                // Retransliterate remaining buffer
+                val transliterated = transliterator.transliterate(inputBuffer.toString())
+                
+                // Replace previous committed text with new transliterated text
+                val toDelete = lastCommittedLength
+                if (toDelete > 0) {
+                    currentInputConnection?.deleteSurroundingText(toDelete, 0)
+                }
+                currentInputConnection?.commitText(transliterated, 1)
+                
+                // Update tracking
+                lastCommittedLength = transliterated.length
+            }
+        } else {
+            // Normal backspace
+            currentInputConnection?.deleteSurroundingText(1, 0)
+            if (isAssameseMode) {
+                lastCommittedLength = 0
+            }
         }
-        currentInputConnection?.deleteSurroundingText(1, 0)
     }
 
     private fun handleShift() {
@@ -150,10 +193,16 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
     }
 
     private fun handleAssameseToggle() {
-        isAssameseMode = !isAssameseMode
+        // Flush any pending transliteration before switching
         if (isAssameseMode) {
-            inputBuffer.clear()
+            flushBuffer()
         }
+        
+        isAssameseMode = !isAssameseMode
+        
+        // Clear state for new mode
+        inputBuffer.clear()
+        lastCommittedLength = 0
         
         // Update the key label to show current mode
         updateLanguageKey()
@@ -172,12 +221,10 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
 
     private fun flushBuffer() {
         if (inputBuffer.isNotEmpty()) {
-            val transliterated = transliterator.transliterate(inputBuffer.toString())
-            if (transliterated.isNotEmpty()) {
-                currentInputConnection?.deleteSurroundingText(inputBuffer.length, 0)
-                currentInputConnection?.commitText(transliterated, 1)
-            }
+            // Buffer should already be transliterated and committed
+            // Just clear the tracking
             inputBuffer.clear()
+            lastCommittedLength = 0
         }
     }
 
