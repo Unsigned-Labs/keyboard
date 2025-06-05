@@ -13,6 +13,8 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
     private var isShiftPressed = false
     private var inputBuffer = StringBuilder()
     private val transliterator = Transliterator()
+    private var isAssameseMode = true
+    private var isSymbolsMode = false
 
     override fun onCreateInputView(): View {
         keyboardView = layoutInflater.inflate(R.layout.keyboard, null) as KeyboardView
@@ -30,7 +32,34 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
             32 -> handleSpace() // Space key
             46 -> handlePeriod() // Period key
             44 -> handleComma() // Comma key
+            -100 -> handleSymbolsToggle() // ?123 key
+            -101 -> handleLanguageSwitch() // Globe key
+            -102 -> handleAssameseToggle() // Assamese toggle key
+            in 48..57 -> handleNumber(primaryCode) // Number keys 0-9
             else -> handleCharacter(primaryCode)
+        }
+    }
+
+    private fun handleNumber(primaryCode: Int) {
+        if (isAssameseMode) {
+            // Convert to Assamese digits
+            val assameseDigit = when (primaryCode) {
+                48 -> "০" // 0
+                49 -> "১" // 1
+                50 -> "২" // 2
+                51 -> "৩" // 3
+                52 -> "৪" // 4
+                53 -> "৫" // 5
+                54 -> "৬" // 6
+                55 -> "৭" // 7
+                56 -> "৮" // 8
+                57 -> "৯" // 9
+                else -> primaryCode.toChar().toString()
+            }
+            currentInputConnection?.commitText(assameseDigit, 1)
+        } else {
+            // English mode - just output the number
+            currentInputConnection?.commitText(primaryCode.toChar().toString(), 1)
         }
     }
 
@@ -38,17 +67,22 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
         val char = primaryCode.toChar()
         val charToAdd = if (isShiftPressed) char.uppercaseChar() else char.lowercaseChar()
         
-        // Add to buffer but don't transliterate immediately
-        inputBuffer.append(charToAdd)
-        
-        // Transliterate the entire buffer
-        val transliterated = transliterator.transliterate(inputBuffer.toString())
-        
-        // Replace the current buffer content with transliterated result
-        if (transliterated.isNotEmpty()) {
-            // Delete previous buffer content and insert new transliterated text
-            currentInputConnection?.deleteSurroundingText(inputBuffer.length - 1, 0)
-            currentInputConnection?.commitText(transliterated, 1)
+        if (isAssameseMode) {
+            // Add to buffer for transliteration
+            inputBuffer.append(charToAdd)
+            
+            // Transliterate the entire buffer
+            val transliterated = transliterator.transliterate(inputBuffer.toString())
+            
+            // Replace the current buffer content with transliterated result
+            if (transliterated.isNotEmpty()) {
+                // Delete previous buffer content and insert new transliterated text
+                currentInputConnection?.deleteSurroundingText(inputBuffer.length - 1, 0)
+                currentInputConnection?.commitText(transliterated, 1)
+            }
+        } else {
+            // English mode - direct character input
+            currentInputConnection?.commitText(charToAdd.toString(), 1)
         }
         
         if (isShiftPressed) {
@@ -58,35 +92,43 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
     }
 
     private fun handleSpace() {
-        flushBuffer()
+        if (isAssameseMode) {
+            flushBuffer()
+        }
         currentInputConnection?.commitText(" ", 1)
     }
 
     private fun handlePeriod() {
-        inputBuffer.append(".")
+        if (isAssameseMode) {
+            inputBuffer.append(".")
 
-        val result = transliterator.transliterateBuffer(inputBuffer.toString())
+            val result = transliterator.transliterateBuffer(inputBuffer.toString())
 
-        if (result.transliterated.isNotEmpty()) {
-            val charsToDelete = result.consumed
-            if (charsToDelete > 1) {
-                currentInputConnection?.deleteSurroundingText(charsToDelete - 1, 0)
+            if (result.transliterated.isNotEmpty()) {
+                val charsToDelete = result.consumed
+                if (charsToDelete > 1) {
+                    currentInputConnection?.deleteSurroundingText(charsToDelete - 1, 0)
+                }
+                currentInputConnection?.commitText(result.transliterated, 1)
+                inputBuffer.clear()
+                inputBuffer.append(result.remaining)
+            } else {
+                currentInputConnection?.commitText(".", 1)
             }
-            currentInputConnection?.commitText(result.transliterated, 1)
-            inputBuffer.clear()
-            inputBuffer.append(result.remaining)
         } else {
             currentInputConnection?.commitText(".", 1)
         }
     }
 
     private fun handleComma() {
-        flushBuffer()
+        if (isAssameseMode) {
+            flushBuffer()
+        }
         currentInputConnection?.commitText(",", 1)
     }
 
     private fun handleBackspace() {
-        if (inputBuffer.isNotEmpty()) {
+        if (isAssameseMode && inputBuffer.isNotEmpty()) {
             inputBuffer.deleteCharAt(inputBuffer.length - 1)
         }
         currentInputConnection?.deleteSurroundingText(1, 0)
@@ -95,6 +137,37 @@ class KeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListe
     private fun handleShift() {
         isShiftPressed = !isShiftPressed
         keyboardView?.isShifted = isShiftPressed
+    }
+
+    private fun handleSymbolsToggle() {
+        // TODO: Implement symbols keyboard layout
+        // For now, just show a toast or do nothing
+    }
+
+    private fun handleLanguageSwitch() {
+        // TODO: Implement system language switching if needed
+        // This could switch to other installed keyboards
+    }
+
+    private fun handleAssameseToggle() {
+        isAssameseMode = !isAssameseMode
+        if (isAssameseMode) {
+            inputBuffer.clear()
+        }
+        
+        // Update the key label to show current mode
+        updateLanguageKey()
+    }
+
+    private fun updateLanguageKey() {
+        // Find and update the language toggle key
+        val keys = keyboard?.keys
+        keys?.forEach { key ->
+            if (key.codes[0] == -102) {
+                key.label = if (isAssameseMode) "EN" else "অসমীয়া"
+            }
+        }
+        keyboardView?.invalidateAllKeys()
     }
 
     private fun flushBuffer() {
