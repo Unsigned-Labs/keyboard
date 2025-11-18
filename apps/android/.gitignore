@@ -1,0 +1,34 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.ap_
+*.aab
+
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Android Studio files
+*.iml
+.idea/
+
+# NDK
+obj/
+
+# Built native libs
+app/src/main/jniLibs/
+
+# Keystore files
+*.keystore
+*.jks
+keystore.properties

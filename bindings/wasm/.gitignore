@@ -1,0 +1,9 @@
+# Build outputs
+/pkg/
+/pkg-node/
+/pkg-bundler/
+/target/
+Cargo.lock
+
+# wasm-pack
+*.log

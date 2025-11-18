@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { transliterate, assameseSchema } from "@unsigned/transliterator";
+import { initSync, transliterate, assameseSchema } from "@unsigned/transliterator-wasm";
+import wasmBytes from "@unsigned/transliterator-wasm/transliterator_wasm_bg.wasm";
+
+// Initialize WASM module
+let wasmInitialized = false;
+try {
+  initSync(wasmBytes);
+  wasmInitialized = true;
+  console.log("Content script: WASM module initialized");
+} catch (err) {
+  console.error("Content script: Failed to initialize WASM module:", err);
+}
 
 interface StateChangedMessage {
   action: "stateChanged";
@@ -70,6 +81,8 @@ const ContentScript: React.FC = () => {
     };
 
     const processTransliteration = (target: HTMLInputElement | HTMLTextAreaElement) => {
+      if (!wasmInitialized) return;
+
       const currentInput = target.value;
       const words = currentInput.split(" ");
       const lastWord = words[words.length - 1];
@@ -78,7 +91,7 @@ const ContentScript: React.FC = () => {
         setCurrentTransliteratedWord("");
         hideModal();
       } else {
-        const transliteratedWord = transliterate(lastWord, assameseSchema);
+        const transliteratedWord = transliterate(lastWord, assameseSchema());
         setCurrentTransliteratedWord(transliteratedWord);
         showModal(target, transliteratedWord);
       }

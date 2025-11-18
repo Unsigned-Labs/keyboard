@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { X, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface InstallationDialogProps {
@@ -14,7 +12,7 @@ interface InstallationDialogProps {
 const InstallationDialog: React.FC<InstallationDialogProps> = ({ isOpen, onClose, browser }) => {
 
   const firefoxInstructions = [
-    "Download the extension ZIP file using the button below",
+    "Download the extension ZIP file from the download button above",
     "Unzip the downloaded file to a location on your computer",
     "Open Firefox and navigate to about:debugging",
     'Click "This Firefox" in the left sidebar',
@@ -24,7 +22,7 @@ const InstallationDialog: React.FC<InstallationDialogProps> = ({ isOpen, onClose
   ];
 
   const chromeInstructions = [
-    "Download the extension ZIP file using the button below",
+    "Download the extension ZIP file from the download button above",
     "Unzip the downloaded file to a location on your computer",
     "Open Chrome and navigate to chrome://extensions",
     'Enable "Developer mode" using the toggle in the top right corner',
@@ -37,33 +35,20 @@ const InstallationDialog: React.FC<InstallationDialogProps> = ({ isOpen, onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-900/95 backdrop-blur-xl border border-white/10 text-white max-w-2xl">
+      <DialogContent className="bg-background border max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-white">
+          <DialogTitle className="text-2xl font-bold">
             Manual Installation Instructions
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-6 mt-4">
-          {/* Download Button */}
-          <div className="flex justify-center">
-            <a
-              href={browser === "firefox" ? "/extension-firefox.zip" : "/extension-chrome.zip"}
-              className="inline-block"
-            >
-              <Button className="bg-purple hover:bg-purple-dark text-white px-8 py-6 text-lg rounded-xl font-medium transition-all shadow-lg shadow-purple/20 hover:shadow-purple/30">
-                <Download className="mr-3 h-5 w-5" />
-                Download {browser === "firefox" ? "Firefox" : "Chrome"} Extension
-              </Button>
-            </a>
-          </div>
-
-          <div className="border-t border-white/10 pt-6">
-            <p className="text-gray-300 text-sm leading-relaxed mb-4">
-              Follow these steps to install the browser extension manually in developer mode:
+          <div>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+              Follow these steps to install the {browser === "firefox" ? "Firefox" : "Chrome"} extension manually in developer mode:
             </p>
             <ol className="space-y-3">
               {instructions.map((instruction, index) => (
-                <li key={index} className="flex gap-3 text-gray-300">
+                <li key={index} className="flex gap-3 text-foreground">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple/20 text-purple flex items-center justify-center text-sm font-medium">
                     {index + 1}
                   </span>

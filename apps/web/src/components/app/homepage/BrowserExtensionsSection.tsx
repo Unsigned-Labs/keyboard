@@ -9,7 +9,7 @@ import ExtensionSsLight from "@/assets/extension-ss-light.png";
 import Image from "next/image";
 
 interface BrowserExtensionsSectionProps {
-  onInstallDialogOpen: () => void;
+  onInstallDialogOpen: (browser: "chrome" | "firefox") => void;
 }
 
 const BrowserExtensionsSection: React.FC<BrowserExtensionsSectionProps> = ({
@@ -60,6 +60,30 @@ const BrowserExtensionsSection: React.FC<BrowserExtensionsSectionProps> = ({
             <h2 className="text-4xl md:text-5xl lg:text-6xl leading-tight">
               Browser Extensions
             </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Type in Indian languages directly in your browser with our lightweight extension.
+            </p>
+
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-purple text-xs">✓</span>
+                </div>
+                <div>
+                  <p className="font-medium">Chromium-based Browsers</p>
+                  <p className="text-sm text-muted-foreground">Chrome, Edge, Brave, Opera, Vivaldi, and more</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-purple text-xs">✓</span>
+                </div>
+                <div>
+                  <p className="font-medium">Firefox-based Browsers</p>
+                  <p className="text-sm text-muted-foreground">Firefox and Firefox variants</p>
+                </div>
+              </div>
+            </div>
 
             {/* Browser Toggle */}
             <div className="flex gap-2 p-1 bg-muted/90 rounded-xl border border-border w-fit">
@@ -87,7 +111,7 @@ const BrowserExtensionsSection: React.FC<BrowserExtensionsSectionProps> = ({
 
             <div className="pt-3">
               <button
-                onClick={onInstallDialogOpen}
+                onClick={() => onInstallDialogOpen(selectedBrowser)}
                 className="inline-flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground"
                 aria-label="How to install from zip"
               >

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { transliterate, assameseSchema, TransliterationSchema } from "@unsigned/transliterator";
+import { useTransliterator, TransliterationSchema } from "@/hooks/useTransliterator";
 import { Button } from "@/components/ui/button";
 import LevelSelector from "@/components/app/typing-practice/LevelSelector";
 import PracticeInterface from "@/components/app/typing-practice/PracticeInterface";
@@ -9,6 +9,7 @@ import { PracticeLevel, getPracticeLevels } from "@/utils/typingPracticeLevels";
 import { ArrowLeft } from "lucide-react";
 
 const TypingPractice: React.FC = () => {
+  const { wasmReady, schemas, transliterate } = useTransliterator();
   const [selectedLanguage, setSelectedLanguage] = useState("as");
   const [levels, setLevels] = useState<PracticeLevel[]>([]);
   const [currentLevelIndex, setCurrentLevelIndex] = useState<number | null>(null);
@@ -48,15 +49,15 @@ const TypingPractice: React.FC = () => {
 
   const updateNextKey = useCallback(
     (input: string) => {
-      if (currentLevel && input.length < currentLevel.text.length) {
+      if (currentLevel && input.length < currentLevel.text.length && schemas.assamese) {
         const nextChar = currentLevel.text[input.length];
-        const englishKey = findEnglishKey(nextChar, assameseSchema);
+        const englishKey = findEnglishKey(nextChar, schemas.assamese);
         setNextKey(englishKey);
       } else {
         setNextKey("");
       }
     },
-    [currentLevel, findEnglishKey]
+    [currentLevel, findEnglishKey, schemas.assamese]
   );
 
   const startTimer = useCallback(() => {
@@ -89,10 +90,10 @@ const TypingPractice: React.FC = () => {
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const input = e.target.value;
-      if (currentLevel) {
+      if (currentLevel && schemas.assamese) {
         setUserInput(input);
 
-        const transliteratedInput = transliterate(input, assameseSchema);
+        const transliteratedInput = transliterate(input, schemas.assamese);
         const targetText = currentLevel.text;
 
         let correct = 0;
@@ -126,7 +127,7 @@ const TypingPractice: React.FC = () => {
         }
       }
     },
-    [currentLevel, updateNextKey, characterStates, timer, stopTimer]
+    [currentLevel, updateNextKey, characterStates, timer, stopTimer, transliterate, schemas.assamese]
   );
 
   const handleReset = useCallback(() => {
@@ -155,6 +156,17 @@ const TypingPractice: React.FC = () => {
       handleStart();
     }
   }, [currentLevelIndex, handleStart]);
+
+  if (!wasmReady) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading transliterator...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4 max-w-4xl relative font-geist-sans">

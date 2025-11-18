@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="General">
+
+        <Preference
+            android:key="enable_keyboard"
+            android:title="Enable Keyboard"
+            android:summary="Tap to enable Unsigned Keyboard as input method"
+            android:icon="@android:drawable/ic_menu_preferences" />
+
+        <ListPreference
+            android:key="language"
+            android:title="Language"
+            android:summary="Select your preferred language"
+            android:entries="@array/language_names"
+            android:entryValues="@array/language_codes"
+            android:defaultValue="assamese"
+            android:icon="@android:drawable/ic_menu_compass" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Appearance">
+
+        <ListPreference
+            android:key="theme"
+            android:title="Keyboard Theme"
+            android:summary="Choose your keyboard appearance"
+            android:entries="@array/theme_names"
+            android:entryValues="@array/theme_codes"
+            android:defaultValue="DEFAULT_LIGHT"
+            android:icon="@android:drawable/ic_menu_view" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Feedback">
+
+        <SwitchPreferenceCompat
+            android:key="vibration"
+            android:title="Vibration on keypress"
+            android:summary="Vibrate when a key is pressed"
+            android:defaultValue="true"
+            android:icon="@android:drawable/ic_lock_silent_mode_off" />
+
+        <SwitchPreferenceCompat
+            android:key="sound"
+            android:title="Sound on keypress"
+            android:summary="Play a sound when a key is pressed"
+            android:defaultValue="true"
+            android:icon="@android:drawable/ic_lock_silent_mode_off" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="About">
+
+        <Preference
+            android:key="version"
+            android:title="Version"
+            android:summary="1.0.0"
+            android:selectable="false"
+            android:icon="@android:drawable/ic_menu_info_details" />
+
+        <Preference
+            android:key="about"
+            android:title="About"
+            android:summary="Unsigned Keyboard - A free, open-source keyboard for Indian languages"
+            android:selectable="false"
+            android:icon="@android:drawable/ic_dialog_info" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

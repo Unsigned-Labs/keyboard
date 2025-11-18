@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+    <name>in.unsigned.IBus.Unsigned</name>
+    <description>Unsigned Keyboard Input Method</description>
+    <exec>${libexecdir}/ibus-engine-unsigned.py</exec>
+    <version>0.1.0</version>
+    <author>Unsigned Labs</author>
+    <license>MIT</license>
+    <homepage>https://keyboard.unsigned.in</homepage>
+    <textdomain>unsigned-keyboard</textdomain>
+
+    <engines>
+        <engine>
+            <name>unsigned-assamese</name>
+            <language>as</language>
+            <license>MIT</license>
+            <author>Unsigned Labs</author>
+            <icon>input-keyboard</icon>
+            <layout>us</layout>
+            <longname>Assamese (Unsigned)</longname>
+            <description>Assamese transliteration input method</description>
+            <rank>50</rank>
+        </engine>
+
+        <engine>
+            <name>unsigned-bangla</name>
+            <language>bn</language>
+            <license>MIT</license>
+            <author>Unsigned Labs</author>
+            <icon>input-keyboard</icon>
+            <layout>us</layout>
+            <longname>Bangla (Unsigned)</longname>
+            <description>Bangla transliteration input method</description>
+            <rank>50</rank>
+        </engine>
+
+        <engine>
+            <name>unsigned-hindi</name>
+            <language>hi</language>
+            <license>MIT</license>
+            <author>Unsigned Labs</author>
+            <icon>input-keyboard</icon>
+            <layout>us</layout>
+            <longname>Hindi (Unsigned)</longname>
+            <description>Hindi transliteration input method</description>
+            <rank>50</rank>
+        </engine>
+    </engines>
+</component>

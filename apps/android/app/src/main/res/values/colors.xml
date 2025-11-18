@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App theme colors -->
+    <color name="purple">#7B68EE</color>
+    <color name="purple_dark">#6A5ACD</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Default Light Theme Colors -->
+    <color name="keyboard_background_light">#ECEFF1</color>
+    <color name="keyboard_separator_light">#F6F7F8</color>
+    <color name="key_normal_light">#FFFFFF</color>
+    <color name="key_functional_light">#E1E5E8</color>
+    <color name="key_action_light">#5E81AC</color>
+    <color name="key_normal_pressed_light">#D8DDE0</color>
+    <color name="key_functional_pressed_light">#C8CDD0</color>
+    <color name="key_action_pressed_light">#5273A0</color>
+    <color name="text_primary_light">#37474F</color>
+    <color name="text_secondary_light">#CC37474F</color>
+    <color name="text_hint_light">#8037474F</color>
+    <color name="text_on_action_light">#FFFFFF</color>
+    <color name="accent_primary_light">#4DB6AC</color>
+    <color name="key_shadow_light">#1437474F</color>
+
+    <!-- Default Dark Theme Colors -->
+    <color name="keyboard_background_dark">#1E2024</color>
+    <color name="keyboard_separator_dark">#2A2D31</color>
+    <color name="key_normal_dark">#2C3035</color>
+    <color name="key_functional_dark">#3A3E44</color>
+    <color name="key_action_dark">#5E81AC</color>
+    <color name="key_normal_pressed_dark">#3C4047</color>
+    <color name="key_functional_pressed_dark">#4A4E54</color>
+    <color name="key_action_pressed_dark">#7091BE</color>
+    <color name="text_primary_dark">#F2FFFFFF</color>
+    <color name="text_secondary_dark">#CCFFFFFF</color>
+    <color name="text_hint_dark">#80FFFFFF</color>
+    <color name="text_on_action_dark">#FFFFFF</color>
+    <color name="accent_primary_dark">#80CBC4</color>
+    <color name="key_shadow_dark">#4D000000</color>
+
+    <!-- Theme-independent colors (will be set dynamically) -->
+    <color name="keyboard_background">@color/keyboard_background_light</color>
+    <color name="keyboard_separator">@color/keyboard_separator_light</color>
+    <color name="key_normal">@color/key_normal_light</color>
+    <color name="key_functional">@color/key_functional_light</color>
+    <color name="key_action">@color/key_action_light</color>
+    <color name="key_normal_pressed">@color/key_normal_pressed_light</color>
+    <color name="key_functional_pressed">@color/key_functional_pressed_light</color>
+    <color name="key_action_pressed">@color/key_action_pressed_light</color>
+    <color name="text_primary">@color/text_primary_light</color>
+    <color name="text_secondary">@color/text_secondary_light</color>
+    <color name="text_hint">@color/text_hint_light</color>
+    <color name="text_on_action">@color/text_on_action_light</color>
+    <color name="accent_primary">@color/accent_primary_light</color>
+    <color name="key_shadow">@color/key_shadow_light</color>
+
+    <!-- Legacy compatibility -->
+    <color name="key_background">#EEEEEE</color>
+    <color name="key_pressed">#BBBBBB</color>
+</resources>

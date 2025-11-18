@@ -1,0 +1,26 @@
+{
+  "name": "@unsigned/transliterator-wasm",
+  "version": "0.1.0",
+  "description": "WebAssembly bindings for transliterator",
+  "main": "pkg/transliterator_wasm.js",
+  "types": "pkg/transliterator_wasm.d.ts",
+  "files": [
+    "pkg"
+  ],
+  "scripts": {
+    "build": "wasm-pack build --target web --out-dir pkg",
+    "build:nodejs": "wasm-pack build --target nodejs --out-dir pkg-node",
+    "build:bundler": "wasm-pack build --target bundler --out-dir pkg-bundler"
+  },
+  "keywords": [
+    "transliteration",
+    "wasm",
+    "webassembly",
+    "assamese",
+    "bengali",
+    "hindi",
+    "indian-languages"
+  ],
+  "author": "Unsigned Labs",
+  "license": "MIT"
+}

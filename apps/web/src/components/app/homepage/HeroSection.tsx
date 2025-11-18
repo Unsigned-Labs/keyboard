@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { TransliterationSchema } from "@unsigned/transliterator";
+import { TransliterationSchema } from "@/hooks/useTransliterator";
 import InputSection from "@/components/app/shared/InputSection";
 import LanguageSelector from "@/components/app/shared/LanguageSelector";
 
@@ -9,7 +9,7 @@ interface Language {
   id: string;
   name: string;
   nativeName: string;
-  schema: TransliterationSchema;
+  schema: TransliterationSchema | null;
 }
 
 interface HeroSectionProps {

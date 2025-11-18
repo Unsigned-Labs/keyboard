@@ -22,6 +22,10 @@ const createWebpackConfig = (browser) => ({
   output: {
     path: path.join(outputDir, browser),
     filename: "[name].js",
+    webassemblyModuleFilename: "[hash].wasm",
+  },
+  experiments: {
+    asyncWebAssembly: true,
   },
   module: {
     rules: [
@@ -65,6 +69,11 @@ const createWebpackConfig = (browser) => ({
         generator: {
           filename: "assets/[name][ext]",
         },
+      },
+      {
+        test: /\.wasm$/,
+        type: "javascript/auto",
+        loader: "arraybuffer-loader",
       },
     ],
   },

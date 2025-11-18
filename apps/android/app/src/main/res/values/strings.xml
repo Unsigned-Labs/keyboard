@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Unsigned Keyboard</string>
+    <string name="ime_name">Unsigned Keyboard</string>
+    <string name="ime_settings">Unsigned Keyboard Settings</string>
+
+    <string-array name="language_names">
+        <item>Hindi (हिंदी)</item>
+        <item>Assamese (অসমীয়া)</item>
+        <item>Bangla (বাংলা)</item>
+    </string-array>
+
+    <string-array name="language_codes">
+        <item>hindi</item>
+        <item>assamese</item>
+        <item>bangla</item>
+    </string-array>
+
+    <string-array name="theme_names">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+
+    <string-array name="theme_codes">
+        <item>DEFAULT_LIGHT</item>
+        <item>DEFAULT_DARK</item>
+    </string-array>
+</resources>

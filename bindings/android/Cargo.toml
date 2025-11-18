@@ -1,0 +1,21 @@
+[package]
+name = "transliterator-android"
+version = "1.0.0"
+edition = "2021"
+authors = ["Unsigned Labs"]
+description = "Android JNI bindings for transliterator"
+license = "MIT"
+
+[lib]
+name = "transliterator"
+crate-type = ["cdylib"]
+
+[dependencies]
+transliterator = { path = "../../core" }
+jni = "0.21"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
