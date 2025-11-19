@@ -1,43 +1,42 @@
 # Unsigned Keyboard
 
-A high-performance transliteration system for English to Indian languages (Hindi, Assamese, Bengali).
-
-## Architecture
-
-**Rust Core** → **Platform Bindings** (TypeScript N-API, WASM) → **Apps** (Node.js, Web)
+Transliteration engine for English to Indian languages (Hindi, Assamese, Bengali).
 
 ## Structure
 
 ```
 keyboard/
-├── core/                   # Rust core SDK
+├── core/                  # Rust transliteration engine
 ├── bindings/
-│   ├── typescript/         # Node.js bindings (N-API)
-│   └── wasm/              # Browser bindings (WebAssembly)
+│   ├── typescript/        # Node.js (N-API)
+│   ├── wasm/              # Browser (WebAssembly)
+│   └── android/           # Android (JNI)
 └── apps/
-    └── web/               # Next.js web application
+    ├── web/               # Next.js web app
+    ├── extension/         # Browser extension
+    ├── linux/             # Linux desktop app
+    ├── android/           # Android app
+    └── cli/               # CLI tool
 ```
 
-## Quick Start
+## Build
 
-### Build Rust Core
+### Core
 ```bash
 cd core && cargo build --release
 ```
 
-### Build TypeScript Bindings (Node.js)
+### Bindings
 ```bash
 cd bindings/typescript && npm install && npm run build
-```
-
-### Build WASM Bindings (Browser)
-```bash
 cd bindings/wasm && wasm-pack build --target bundler
+cd bindings/android && cargo build --target aarch64-linux-android --release
 ```
 
-### Run Web App
+### Apps
 ```bash
 cd apps/web && npm install && npm run dev
+cd apps/linux && cargo build --release
 ```
 
 ## Usage
@@ -49,11 +48,31 @@ const t = new Transliterator(hindiSchema());
 console.log(t.transliterate('namaste')); // नमस्ते
 ```
 
-### Browser/Web
+### Browser
 ```javascript
 import init, { transliterate, hindiSchema } from '@unsigned/transliterator-wasm';
 await init();
 console.log(transliterate('namaste', hindiSchema())); // नमस्ते
+```
+
+### Android
+```kotlin
+import `in`.unsigned.keyboard.Transliterator
+
+Transliterator.transliterate("namaste", "hindi") // नमस्ते
+```
+
+### CLI
+```bash
+cd apps/cli && npm start
+```
+
+### Linux Desktop (Rust)
+```rust
+use transliterator::{Transliterator, hindi_schema};
+
+let t = Transliterator::new(hindi_schema());
+let result = t.transliterate("namaste"); // नमस्ते
 ```
 
 ## License
