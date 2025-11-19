@@ -32,7 +32,7 @@ export function useTransliterator() {
   });
 
   useEffect(() => {
-    // Initialize WASM with explicit path to the wasm file
+    // Initialize WASM from public directory
     const initWasm = async () => {
       try {
         // Load WASM from public directory

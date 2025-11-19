@@ -9,8 +9,8 @@
   ],
   "scripts": {
     "build": "wasm-pack build --target web --out-dir pkg",
-    "build:nodejs": "wasm-pack build --target nodejs --out-dir pkg-node",
-    "build:bundler": "wasm-pack build --target bundler --out-dir pkg-bundler"
+    "build:bundler": "wasm-pack build --target bundler --out-dir pkg-bundler",
+    "build:nodejs": "wasm-pack build --target nodejs --out-dir pkg-node"
   },
   "keywords": [
     "transliteration",

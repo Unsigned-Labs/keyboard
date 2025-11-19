@@ -74,6 +74,10 @@ jobs:
           cd ../../bindings/wasm
           npm run build
 
+      - name: Copy WASM files to public directory
+        run: |
+          cp ../../bindings/wasm/pkg/transliterator_wasm_bg.wasm ./public/
+
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
 
