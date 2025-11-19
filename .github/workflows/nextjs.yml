@@ -48,6 +48,14 @@ jobs:
           cache: ${{ steps.detect-package-manager.outputs.manager }}
           cache-dependency-path: apps/web/package-lock.json
 
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
@@ -61,14 +69,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('apps/web/package-lock.json') }}-
 
+      - name: Build WASM bindings
+        run: |
+          cd ../../bindings/wasm
+          npm run build
+
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
-
-      - name: Build transliterator package
-        run: |
-          cd ../../core/typescript
-          npm ci
-          npm run build
 
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
