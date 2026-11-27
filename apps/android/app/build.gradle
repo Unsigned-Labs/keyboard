@@ -41,7 +41,10 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            // Without keystore.properties the release APK is left unsigned, to be signed elsewhere.
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
         }
         debug {
             minifyEnabled false
@@ -59,14 +62,25 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     sourceSets {
         main {
             jniLibs.srcDirs = ['src/main/jniLibs']
+            assets.srcDirs += "$buildDir/generated/packAssets"
         }
     }
 }
+
+// Bundle the repo's language packs (modules/) as assets/packs.
+def copyPacks = tasks.register('copyPacks', Sync) {
+    from("${rootDir}/../../modules") {
+        include '**/*.json'
+    }
+    into "$buildDir/generated/packAssets/packs"
+}
+tasks.named('preBuild') { dependsOn copyPacks }
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
