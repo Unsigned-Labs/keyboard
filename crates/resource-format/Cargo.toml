@@ -1,0 +1,12 @@
+[package]
+name = "unsigned-resource-format"
+version = "0.1.0"
+edition = "2021"
+authors = ["Unsigned Labs"]
+description = "Versioned resource manifests for Unsigned Keyboard"
+license = "MIT"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+

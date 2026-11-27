@@ -1,0 +1,452 @@
+{
+  "format_version": 1,
+  "language": {
+    "tag": "as",
+    "script": "Beng",
+    "name": "Assamese",
+    "native_name": "অসমীয়া"
+  },
+  "resource": {
+    "id": "org.unsigned.layout.as.native",
+    "kind": "keyboard_layout",
+    "version": "1.0.0",
+    "engine": {
+      "abi": 1,
+      "minimum_runtime_version": "0.1.0"
+    },
+    "license": "MIT",
+    "attribution": "Unsigned Labs"
+  },
+  "layout": {
+    "name": "অসমীয়া বৰ্ণমালা",
+    "input": "direct",
+    "composition": {
+      "consonants": [
+        "ক",
+        "খ",
+        "গ",
+        "ঘ",
+        "ঙ",
+        "চ",
+        "ছ",
+        "জ",
+        "ঝ",
+        "ঞ",
+        "ট",
+        "ঠ",
+        "ড",
+        "ঢ",
+        "ণ",
+        "ত",
+        "থ",
+        "দ",
+        "ধ",
+        "ন",
+        "প",
+        "ফ",
+        "ব",
+        "ভ",
+        "ম",
+        "য",
+        "ৰ",
+        "ল",
+        "ৱ",
+        "শ",
+        "ষ",
+        "স",
+        "হ",
+        "ড়",
+        "ঢ়",
+        "য়",
+        "়"
+      ]
+    },
+    "pages": [
+      {
+        "id": "main",
+        "rows": [
+          {
+            "keys": [
+              {
+                "output": "অ"
+              },
+              {
+                "output": "আ",
+                "after_consonant": "া",
+                "long_press": [
+                  "া"
+                ]
+              },
+              {
+                "output": "ই",
+                "after_consonant": "ি",
+                "long_press": [
+                  "ি"
+                ]
+              },
+              {
+                "output": "ঈ",
+                "after_consonant": "ী",
+                "long_press": [
+                  "ী"
+                ]
+              },
+              {
+                "output": "উ",
+                "after_consonant": "ু",
+                "long_press": [
+                  "ু"
+                ]
+              },
+              {
+                "output": "ঊ",
+                "after_consonant": "ূ",
+                "long_press": [
+                  "ূ"
+                ]
+              },
+              {
+                "output": "ঋ",
+                "after_consonant": "ৃ",
+                "long_press": [
+                  "ৃ"
+                ]
+              },
+              {
+                "output": "এ",
+                "after_consonant": "ে",
+                "long_press": [
+                  "ে"
+                ]
+              },
+              {
+                "output": "ঐ",
+                "after_consonant": "ৈ",
+                "long_press": [
+                  "ৈ"
+                ]
+              },
+              {
+                "output": "ও",
+                "after_consonant": "ো",
+                "long_press": [
+                  "ো"
+                ]
+              },
+              {
+                "output": "ঔ",
+                "after_consonant": "ৌ",
+                "long_press": [
+                  "ৌ"
+                ]
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "output": "ক"
+              },
+              {
+                "output": "খ"
+              },
+              {
+                "output": "গ"
+              },
+              {
+                "output": "ঘ"
+              },
+              {
+                "output": "ঙ"
+              },
+              {
+                "output": "চ"
+              },
+              {
+                "output": "ছ"
+              },
+              {
+                "output": "জ"
+              },
+              {
+                "output": "ঝ"
+              },
+              {
+                "output": "ঞ"
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "output": "ট"
+              },
+              {
+                "output": "ঠ"
+              },
+              {
+                "output": "ড"
+              },
+              {
+                "output": "ঢ"
+              },
+              {
+                "output": "ণ"
+              },
+              {
+                "output": "ত"
+              },
+              {
+                "output": "থ"
+              },
+              {
+                "output": "দ"
+              },
+              {
+                "output": "ধ"
+              },
+              {
+                "output": "ন"
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "label": "১/২",
+                "action": "page",
+                "width": 1.5,
+                "target": "more"
+              },
+              {
+                "output": "প"
+              },
+              {
+                "output": "ফ"
+              },
+              {
+                "output": "ব"
+              },
+              {
+                "output": "ভ"
+              },
+              {
+                "output": "ম"
+              },
+              {
+                "output": "য"
+              },
+              {
+                "output": "ৰ"
+              },
+              {
+                "label": "⌫",
+                "action": "delete",
+                "width": 1.5
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "label": "?123",
+                "action": "symbols",
+                "width": 1.5
+              },
+              {
+                "label": "🌐",
+                "action": "next_input_method"
+              },
+              {
+                "output": "্",
+                "label": "◌্"
+              },
+              {
+                "action": "space",
+                "width": 4
+              },
+              {
+                "output": "।"
+              },
+              {
+                "label": "↵",
+                "action": "enter",
+                "width": 1.5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "more",
+        "rows": [
+          {
+            "keys": [
+              {
+                "output": "ল"
+              },
+              {
+                "output": "ৱ"
+              },
+              {
+                "output": "শ"
+              },
+              {
+                "output": "ষ"
+              },
+              {
+                "output": "স"
+              },
+              {
+                "output": "হ"
+              },
+              {
+                "output": "ক্ষ"
+              },
+              {
+                "output": "ড়"
+              },
+              {
+                "output": "ঢ়"
+              },
+              {
+                "output": "য়"
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "output": "০"
+              },
+              {
+                "output": "১"
+              },
+              {
+                "output": "২"
+              },
+              {
+                "output": "৩"
+              },
+              {
+                "output": "৪"
+              },
+              {
+                "output": "৫"
+              },
+              {
+                "output": "৬"
+              },
+              {
+                "output": "৭"
+              },
+              {
+                "output": "৮"
+              },
+              {
+                "output": "৯"
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "output": "ং",
+                "label": "◌ং"
+              },
+              {
+                "output": "ঃ",
+                "label": "◌ঃ"
+              },
+              {
+                "output": "ঁ",
+                "label": "◌ঁ"
+              },
+              {
+                "output": "ৎ",
+                "label": "ৎ"
+              },
+              {
+                "output": "়",
+                "label": "◌়"
+              },
+              {
+                "output": "৳",
+                "label": "৳"
+              },
+              {
+                "output": "?",
+                "label": "?"
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "label": "২/২",
+                "action": "page",
+                "width": 1.5,
+                "target": "main"
+              },
+              {
+                "output": ","
+              },
+              {
+                "output": "!"
+              },
+              {
+                "output": "'"
+              },
+              {
+                "output": "\""
+              },
+              {
+                "output": "-"
+              },
+              {
+                "output": "("
+              },
+              {
+                "output": ")"
+              },
+              {
+                "label": "⌫",
+                "action": "delete",
+                "width": 1.5
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "label": "?123",
+                "action": "symbols",
+                "width": 1.5
+              },
+              {
+                "label": "🌐",
+                "action": "next_input_method"
+              },
+              {
+                "output": "্",
+                "label": "◌্"
+              },
+              {
+                "action": "space",
+                "width": 4
+              },
+              {
+                "output": "।"
+              },
+              {
+                "label": "↵",
+                "action": "enter",
+                "width": 1.5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

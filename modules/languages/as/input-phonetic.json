@@ -1,0 +1,26 @@
+{
+  "format_version": 1,
+  "language": {
+    "tag": "as",
+    "script": "Beng",
+    "name": "Assamese",
+    "native_name": "অসমীয়া"
+  },
+  "resource": {
+    "id": "org.unsigned.input.as.phonetic",
+    "kind": "input_method",
+    "version": "1.0.0",
+    "engine": {
+      "abi": 1,
+      "minimum_runtime_version": "0.1.0"
+    },
+    "license": "MIT",
+    "attribution": "Unsigned Labs"
+  },
+  "input_method": {
+    "name": "অসমীয়া (ফ'নেটিক)",
+    "short_label": "অ",
+    "layout": "org.unsigned.layout.qwerty",
+    "transliteration": "org.unsigned.transliteration.as"
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "format_version": 1,
+  "resource": {
+    "id": "org.unsigned.layout.qwerty",
+    "kind": "keyboard_layout",
+    "version": "1.0.0",
+    "engine": {
+      "abi": 1,
+      "minimum_runtime_version": "0.1.0"
+    },
+    "license": "MIT",
+    "attribution": "Unsigned Labs"
+  },
+  "layout": {
+    "name": "QWERTY",
+    "input": "latin",
+    "pages": [
+      {
+        "id": "main",
+        "rows": [
+          {
+            "keys": [
+              {
+                "output": "q"
+              },
+              {
+                "output": "w"
+              },
+              {
+                "output": "e"
+              },
+              {
+                "output": "r"
+              },
+              {
+                "output": "t"
+              },
+              {
+                "output": "y"
+              },
+              {
+                "output": "u"
+              },
+              {
+                "output": "i"
+              },
+              {
+                "output": "o"
+              },
+              {
+                "output": "p"
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "output": "a"
+              },
+              {
+                "output": "s"
+              },
+              {
+                "output": "d"
+              },
+              {
+                "output": "f"
+              },
+              {
+                "output": "g"
+              },
+              {
+                "output": "h"
+              },
+              {
+                "output": "j"
+              },
+              {
+                "output": "k"
+              },
+              {
+                "output": "l"
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "label": "⇧",
+                "action": "shift",
+                "width": 1.5
+              },
+              {
+                "output": "z"
+              },
+              {
+                "output": "x"
+              },
+              {
+                "output": "c"
+              },
+              {
+                "output": "v"
+              },
+              {
+                "output": "b"
+              },
+              {
+                "output": "n"
+              },
+              {
+                "output": "m"
+              },
+              {
+                "label": "⌫",
+                "action": "delete",
+                "width": 1.5
+              }
+            ]
+          },
+          {
+            "keys": [
+              {
+                "label": "?123",
+                "action": "symbols",
+                "width": 1.5
+              },
+              {
+                "label": "🌐",
+                "action": "next_input_method"
+              },
+              {
+                "output": ","
+              },
+              {
+                "action": "space",
+                "width": 4
+              },
+              {
+                "output": "."
+              },
+              {
+                "label": "↵",
+                "action": "enter",
+                "width": 1.5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
