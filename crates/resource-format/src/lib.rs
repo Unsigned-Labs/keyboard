@@ -5,7 +5,9 @@
 //!
 //! - `transliteration`: input rules that turn Latin keystrokes into a script (`schema`)
 //! - `keyboard_layout`: keys, pages and what each key types (`layout`)
-//! - `input_method`: a named combination of a layout and an optional transliteration (`input_method`)
+//! - `dictionary`: words of a language with how often they are used (`dictionary`)
+//! - `input_method`: a named combination of a layout, an optional transliteration and an optional
+//!   dictionary (`input_method`)
 //!
 //! Apps load packs from their own bundle or from files the user imports; this crate only parses and
 //! validates them, so every platform accepts and rejects exactly the same files.
@@ -19,6 +21,7 @@ pub const RESOURCE_FORMAT_VERSION: u32 = 1;
 pub const TRANSLITERATION_ENGINE_ABI: u32 = 1;
 pub const KEYBOARD_LAYOUT_ABI: u32 = 1;
 pub const INPUT_METHOD_ABI: u32 = 1;
+pub const DICTIONARY_ABI: u32 = 1;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ValidationError {
@@ -96,7 +99,8 @@ impl ResourceKind {
             Self::Transliteration => Some(TRANSLITERATION_ENGINE_ABI),
             Self::KeyboardLayout => Some(KEYBOARD_LAYOUT_ABI),
             Self::InputMethod => Some(INPUT_METHOD_ABI),
-            Self::Dictionary | Self::SpeechToText => None,
+            Self::Dictionary => Some(DICTIONARY_ABI),
+            Self::SpeechToText => None,
         }
     }
 }
@@ -522,6 +526,9 @@ pub struct InputMethod {
     /// Latin text is typed as is.
     #[serde(default)]
     pub transliteration: Option<String>,
+    /// Resource id of a dictionary used to suggest and rank words.
+    #[serde(default)]
+    pub dictionary: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -549,6 +556,9 @@ impl InputMethodModule {
         if let Some(t) = &self.input_method.transliteration {
             validate_identifier(t, "input_method.transliteration")?;
         }
+        if let Some(d) = &self.input_method.dictionary {
+            validate_identifier(d, "input_method.dictionary")?;
+        }
         Ok(())
     }
 
@@ -558,7 +568,64 @@ impl InputMethodModule {
         if let Some(t) = &self.input_method.transliteration {
             deps.push(t.as_str());
         }
+        if let Some(d) = &self.input_method.dictionary {
+            deps.push(d.as_str());
+        }
         deps
+    }
+}
+
+/* -------------------------------------------------------------------------------------------- */
+/* Dictionary                                                                                    */
+/* -------------------------------------------------------------------------------------------- */
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Dictionary {
+    /// Word → how often it was seen in the source text. Only the ratios matter.
+    pub words: HashMap<String, u64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DictionaryModule {
+    pub format_version: u32,
+    pub language: LanguageIdentity,
+    pub resource: ResourceMetadata,
+    pub dictionary: Dictionary,
+}
+
+impl DictionaryModule {
+    pub fn from_json_slice(bytes: &[u8]) -> Result<Self, ResourceError> {
+        let module: Self = serde_json::from_slice(bytes)?;
+        module.validate()?;
+        Ok(module)
+    }
+
+    pub fn validate(&self) -> Result<(), ValidationError> {
+        validate_format_version(self.format_version)?;
+        self.language.validate("language")?;
+        self.resource.validate("resource")?;
+        self.resource.validate_kind(ResourceKind::Dictionary)?;
+        if self.dictionary.words.is_empty() {
+            return Err(ValidationError::new(
+                "dictionary.words",
+                "must contain at least one word",
+            ));
+        }
+        for (word, count) in &self.dictionary.words {
+            if word.is_empty() || word.chars().any(char::is_whitespace) {
+                return Err(ValidationError::new(
+                    format!("dictionary.words.{word}"),
+                    "words must be non-empty and contain no spaces",
+                ));
+            }
+            if *count == 0 {
+                return Err(ValidationError::new(
+                    format!("dictionary.words.{word}"),
+                    "counts must be greater than zero",
+                ));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -571,6 +638,7 @@ pub enum Pack {
     Transliteration(TransliterationModule),
     KeyboardLayout(KeyboardLayoutModule),
     InputMethod(InputMethodModule),
+    Dictionary(DictionaryModule),
 }
 
 /// Short description of a pack for listings and import results.
@@ -610,6 +678,9 @@ impl Pack {
             ResourceKind::InputMethod => Ok(Self::InputMethod(InputMethodModule::from_json_slice(
                 bytes,
             )?)),
+            ResourceKind::Dictionary => {
+                Ok(Self::Dictionary(DictionaryModule::from_json_slice(bytes)?))
+            }
             other => Err(ValidationError::new(
                 "resource.kind",
                 format!("{other:?} packs are not supported by this version of the app yet"),
@@ -624,6 +695,7 @@ impl Pack {
             Self::Transliteration(m) => serde_json::to_string(m),
             Self::KeyboardLayout(m) => serde_json::to_string(m),
             Self::InputMethod(m) => serde_json::to_string(m),
+            Self::Dictionary(m) => serde_json::to_string(m),
         };
         value.expect("packs always serialize")
     }
@@ -633,6 +705,7 @@ impl Pack {
             Self::Transliteration(m) => &m.resource,
             Self::KeyboardLayout(m) => &m.resource,
             Self::InputMethod(m) => &m.resource,
+            Self::Dictionary(m) => &m.resource,
         }
     }
 
@@ -653,6 +726,11 @@ impl Pack {
                 m.input_method.name.clone(),
                 Some(m.language.tag.clone()),
                 m.dependencies().into_iter().map(String::from).collect(),
+            ),
+            Self::Dictionary(m) => (
+                format!("{} dictionary", m.language.name),
+                Some(m.language.tag.clone()),
+                vec![],
             ),
         };
         PackInfo {
@@ -791,7 +869,7 @@ mod tests {
 
     #[test]
     fn rejects_unsupported_kinds_and_abis() {
-        let dict = LAYOUT.replace("keyboard_layout", "dictionary");
+        let dict = LAYOUT.replace("keyboard_layout", "speech_to_text");
         assert!(Pack::from_json_slice(dict.as_bytes())
             .unwrap_err()
             .to_string()
@@ -813,5 +891,18 @@ mod tests {
             compare_versions("1.0.0", "1.0.0-beta"),
             std::cmp::Ordering::Equal
         );
+    }
+
+    #[test]
+    fn parses_dictionaries_and_rejects_bad_words() {
+        let json = r#"{"format_version": 1,
+          "language": {"tag": "as", "script": "Beng", "name": "Assamese", "native_name": "অসমীয়া"},
+          "resource": {"id": "test.dict", "kind": "dictionary", "version": "1.0.0",
+                       "engine": {"abi": 1, "minimum_runtime_version": "0.1.0"}, "license": "CC-BY-SA-4.0"},
+          "dictionary": {"words": {"আমি": 10, "তুমি": 5}}}"#;
+        let pack = Pack::from_json_slice(json.as_bytes()).unwrap();
+        assert_eq!(pack.info().kind, ResourceKind::Dictionary);
+        let bad = json.replace("\"তুমি\"", "\"তু মি\"");
+        assert!(Pack::from_json_slice(bad.as_bytes()).is_err());
     }
 }

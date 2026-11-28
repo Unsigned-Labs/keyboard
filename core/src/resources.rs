@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use crate::Transliterator;
+use crate::{Candidate, CandidateModel, Dictionary, Transliterator};
 
 pub use unsigned_resource_format::{
     compare_versions, EngineCompatibility, InputMethodModule, KeyboardLayoutModule,
@@ -22,7 +22,8 @@ pub fn load_transliteration_module(bytes: &[u8]) -> Result<Transliterator, Resou
 #[derive(Default)]
 pub struct PackStore {
     packs: HashMap<String, Pack>,
-    transliterators: HashMap<String, Transliterator>,
+    transliterators: HashMap<String, (Transliterator, CandidateModel)>,
+    dictionaries: HashMap<String, Dictionary>,
 }
 
 impl PackStore {
@@ -39,10 +40,23 @@ impl PackStore {
                 return Ok(existing.info());
             }
         }
-        if let Pack::Transliteration(module) = &pack {
-            self.transliterators
-                .insert(info.id.clone(), Transliterator::new(module.schema.clone()));
-        }
+        let pack = match pack {
+            Pack::Transliteration(module) => {
+                let model = CandidateModel::new(&module.schema);
+                let transliterator = Transliterator::new(module.schema.clone());
+                self.transliterators
+                    .insert(info.id.clone(), (transliterator, model));
+                Pack::Transliteration(module)
+            }
+            // The words live in the sorted lookup table only; the kept pack is just its header.
+            Pack::Dictionary(mut module) => {
+                self.dictionaries
+                    .insert(info.id.clone(), Dictionary::new(&module));
+                module.dictionary.words = HashMap::new();
+                Pack::Dictionary(module)
+            }
+            other => other,
+        };
         self.packs.insert(info.id.clone(), pack);
         Ok(info)
     }
@@ -50,6 +64,7 @@ impl PackStore {
     pub fn remove(&mut self, id: &str) {
         self.packs.remove(id);
         self.transliterators.remove(id);
+        self.dictionaries.remove(id);
     }
 
     pub fn get(&self, id: &str) -> Option<&Pack> {
@@ -102,14 +117,104 @@ impl PackStore {
     pub fn clear(&mut self) {
         self.packs.clear();
         self.transliterators.clear();
+        self.dictionaries.clear();
     }
 
     /// Transliterate with a loaded transliteration pack. Unknown ids return the input unchanged.
     pub fn transliterate(&self, transliteration_id: &str, input: &str) -> String {
         match self.transliterators.get(transliteration_id) {
-            Some(t) => t.transliterate(input),
+            Some((t, _)) => t.transliterate(input),
             None => input.to_string(),
         }
+    }
+
+    /// Converts a whole text typed with an input method, word by word, taking each word's best
+    /// candidate. Punctuation the scheme doesn't use is kept around a word (`kotha,` → `কথা,`, and a
+    /// final full stop stays a full stop); a word with such characters inside it, like `mo.i` or a
+    /// backtick escape, goes through the plain transliterator so its controls still work.
+    pub fn convert(&self, input_method_id: &str, text: &str) -> String {
+        let Some(Pack::InputMethod(im)) = self.packs.get(input_method_id) else {
+            return text.to_string();
+        };
+        let Some(transliteration) = im.input_method.transliteration.as_deref() else {
+            return text.to_string();
+        };
+        if text.contains('`') {
+            // Text between backticks stays as typed; the rest is converted.
+            return text
+                .split('`')
+                .enumerate()
+                .map(|(i, part)| {
+                    if i % 2 == 1 {
+                        part.to_string()
+                    } else {
+                        self.convert(input_method_id, part)
+                    }
+                })
+                .collect();
+        }
+        let alphabet = self.input_alphabet(transliteration);
+        let in_alphabet = |c: char| alphabet.contains(c);
+
+        let mut out = String::with_capacity(text.len() * 3);
+        let mut rest = text;
+        while !rest.is_empty() {
+            let space_len = rest.len() - rest.trim_start().len();
+            out.push_str(&rest[..space_len]);
+            rest = &rest[space_len..];
+            let word_len = rest.find(char::is_whitespace).unwrap_or(rest.len());
+            let word = &rest[..word_len];
+            rest = &rest[word_len..];
+            if word.is_empty() {
+                continue;
+            }
+
+            let core_start = word.find(in_alphabet).unwrap_or(word.len());
+            let core_end = word.rfind(in_alphabet).map_or(core_start, |i| {
+                i + word[i..].chars().next().map_or(0, char::len_utf8)
+            });
+            let (lead, core, trail) = (
+                &word[..core_start],
+                &word[core_start..core_end],
+                &word[core_end..],
+            );
+            if core.is_empty() {
+                out.push_str(word);
+            } else if core.chars().all(in_alphabet) {
+                out.push_str(lead);
+                match self.candidates(input_method_id, core, 2).first() {
+                    Some(best) => out.push_str(&best.text),
+                    None => out.push_str(&self.transliterate(transliteration, core)),
+                }
+                out.push_str(trail);
+            } else {
+                out.push_str(&self.transliterate(transliteration, word));
+            }
+        }
+        out
+    }
+
+    /// Ranked candidates for what was typed with an input method: dictionary words, the exact
+    /// transliteration, completions and the input itself. See [`CandidateModel::candidates`].
+    pub fn candidates(&self, input_method_id: &str, input: &str, limit: usize) -> Vec<Candidate> {
+        let Some(Pack::InputMethod(im)) = self.packs.get(input_method_id) else {
+            return vec![];
+        };
+        let Some((transliterator, model)) = im
+            .input_method
+            .transliteration
+            .as_deref()
+            .and_then(|id| self.transliterators.get(id))
+        else {
+            return vec![];
+        };
+        let dictionary = im
+            .input_method
+            .dictionary
+            .as_deref()
+            .and_then(|id| self.dictionaries.get(id));
+        let exact = transliterator.transliterate(input);
+        model.candidates(input, &exact, dictionary, limit)
     }
 }
 
@@ -175,6 +280,17 @@ mod tests {
         for im in input_methods {
             assert!(store.missing_dependencies(&im.id).is_empty(), "{}", im.id);
         }
+        assert_eq!(
+            store.convert(
+                "org.unsigned.input.as.phonetic",
+                "moi nodi, korisil.  mo.i (kotha)"
+            ),
+            "মই নদী, কৰিছিল.  মই (কথা)"
+        );
+        assert_eq!(
+            store.convert("org.unsigned.input.hi.phonetic", "aap kaise hain?"),
+            "आप कैसे हैं?"
+        );
         assert!(store
             .get("org.unsigned.layout.as.native")
             .unwrap()

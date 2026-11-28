@@ -21,6 +21,7 @@
     "name": "বাংলা (ফোনেটিক)",
     "short_label": "বা",
     "layout": "org.unsigned.layout.qwerty",
-    "transliteration": "org.unsigned.transliteration.bn"
+    "transliteration": "org.unsigned.transliteration.bn",
+    "dictionary": "org.unsigned.dictionary.bn"
   }
 }

@@ -185,7 +185,8 @@ impl Transliterator {
         // Helper function to check a category
         let check_category = |map: &std::collections::HashMap<String, Vec<String>>,
                               category: CharCategory,
-                              current_max: usize| -> Option<MatchResult> {
+                              current_max: usize|
+         -> Option<MatchResult> {
             let mut best: Option<MatchResult> = None;
             let mut best_len = current_max;
 
@@ -193,7 +194,12 @@ impl Transliterator {
                 for romanization in romanizations {
                     if input.starts_with(romanization) {
                         let len = romanization.len();
-                        if len > best_len && (!skip_next_combination || len == 1) {
+                        // Equal spellings in one category (e.g. `Sh` for both श and ष) pick the
+                        // lower code point, so the result doesn't depend on HashMap order.
+                        let better = len > best_len
+                            || (len == best_len
+                                && best.as_ref().is_some_and(|b| *target_char < b.matched_char));
+                        if better && (!skip_next_combination || len == 1) {
                             best = Some(MatchResult {
                                 matched_char: target_char.clone(),
                                 matched_length: len,
@@ -247,11 +253,20 @@ impl Transliterator {
                 }
 
                 // Check if next character is a consonant for joined forms
-                let next_consonant = self.find_next_consonant(chars, index + match_result.matched_length);
+                let next_consonant =
+                    self.find_next_consonant(chars, index + match_result.matched_length);
 
                 if next_consonant.is_some()
-                    && self.schema.exceptions.joined_consonants_before.contains_key(&match_result.matched_char) {
-                    output.push_str(&self.schema.exceptions.joined_consonants_before[&match_result.matched_char]);
+                    && self
+                        .schema
+                        .exceptions
+                        .joined_consonants_before
+                        .contains_key(&match_result.matched_char)
+                {
+                    output.push_str(
+                        &self.schema.exceptions.joined_consonants_before
+                            [&match_result.matched_char],
+                    );
                 } else {
                     output.push_str(&match_result.matched_char);
                 }
@@ -263,7 +278,12 @@ impl Transliterator {
                     // Find corresponding vowel mark
                     let mut found_mark = false;
                     for (vowel_mark, romanizations) in &self.schema.vowel_marks {
-                        if let Some(first_rom) = self.schema.vowels.get(&match_result.matched_char).and_then(|v| v.first()) {
+                        if let Some(first_rom) = self
+                            .schema
+                            .vowels
+                            .get(&match_result.matched_char)
+                            .and_then(|v| v.first())
+                        {
                             if romanizations.contains(first_rom) {
                                 output.push_str(vowel_mark);
                                 found_mark = true;
@@ -284,9 +304,16 @@ impl Transliterator {
         }
 
         // Check for joined consonants after
-        let romanization: String = chars[index..index + match_result.matched_length].iter().collect();
+        let romanization: String = chars[index..index + match_result.matched_length]
+            .iter()
+            .collect();
         if previous_char_was_consonant
-            && self.schema.exceptions.joined_consonants_after.contains_key(&romanization) {
+            && self
+                .schema
+                .exceptions
+                .joined_consonants_after
+                .contains_key(&romanization)
+        {
             output = format!(
                 "{}{}",
                 self.schema.exceptions.explicit_holonto,

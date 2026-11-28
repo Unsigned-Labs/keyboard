@@ -21,6 +21,7 @@
     "name": "অসমীয়া (ফ'নেটিক)",
     "short_label": "অ",
     "layout": "org.unsigned.layout.qwerty",
-    "transliteration": "org.unsigned.transliteration.as"
+    "transliteration": "org.unsigned.transliteration.as",
+    "dictionary": "org.unsigned.dictionary.as"
   }
 }

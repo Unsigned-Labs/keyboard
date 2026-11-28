@@ -21,6 +21,7 @@
     "name": "हिन्दी (फ़ोनेटिक)",
     "short_label": "हि",
     "layout": "org.unsigned.layout.qwerty",
-    "transliteration": "org.unsigned.transliteration.hi"
+    "transliteration": "org.unsigned.transliteration.hi",
+    "dictionary": "org.unsigned.dictionary.hi"
   }
 }
