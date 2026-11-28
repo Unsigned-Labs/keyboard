@@ -26,6 +26,13 @@ android {
     }
 
     signingConfigs {
+        // Public debug key (password "android"), committed so every debug build has the same signature.
+        debug {
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+            storeFile file("debug.keystore")
+            storePassword "android"
+        }
         release {
             if (keystorePropertiesFile.exists()) {
                 keyAlias keystoreProperties['keyAlias']
@@ -46,8 +53,12 @@ android {
                 signingConfig signingConfigs.release
             }
         }
+        // Debug builds are a separate app (in.unsigned.keyboard.debug), so they install next to the release.
         debug {
             minifyEnabled false
+            signingConfig signingConfigs.debug
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
         }
     }
 

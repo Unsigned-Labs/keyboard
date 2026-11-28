@@ -1,0 +1,73 @@
+name: Build Android
+
+# Run by hand from the Actions tab. "debug" is signed with the public debug key in the repo (installs as
+# in.unsigned.keyboard.debug, next to the release). "release" is unsigned: download it and sign it yourself.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [debug, release]
+        default: debug
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      NDK_VERSION: 27.0.12077973
+    steps:
+      # Actions pinned to commit SHAs, not mutable tags.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Resolve short commit SHA
+        id: meta
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Android NDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$NDK_VERSION" > /dev/null
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$NDK_VERSION" >> "$GITHUB_ENV"
+
+      - name: Install Rust Android targets and cargo-ndk
+        run: |
+          rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+          cargo install cargo-ndk --locked
+
+      - name: Build native libraries
+        working-directory: bindings/android
+        run: ./build.sh
+
+      - name: Build APK
+        working-directory: apps/android
+        run: |
+          if [ "${{ inputs.mode }}" = debug ]; then
+            ./gradlew --no-daemon assembleDebug
+            cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/unsigned-keyboard-debug.apk"
+          else
+            ./gradlew --no-daemon assembleRelease
+            cp app/build/outputs/apk/release/app-release-unsigned.apk "$GITHUB_WORKSPACE/unsigned-keyboard-release-unsigned.apk"
+          fi
+
+      # The sha256 of the exact bytes uploaded, to compare against local builds or what gets signed later.
+      - name: Record artifact hash
+        id: apk
+        run: |
+          f=$(ls unsigned-keyboard-*.apk)
+          echo "file=$f" >> "$GITHUB_OUTPUT"
+          echo "### Artifact hash" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          sha256sum "$f" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unsigned-keyboard-${{ inputs.mode }}-${{ steps.meta.outputs.sha_short }}
+          path: ${{ steps.apk.outputs.file }}
+          retention-days: 30

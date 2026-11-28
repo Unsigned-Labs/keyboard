@@ -33,3 +33,6 @@ app/src/main/jniLibs/
 *.jks
 keystore.properties
 .env
+
+# Public debug key, committed on purpose so anyone (and CI) builds debug APKs that update each other.
+!app/debug.keystore
