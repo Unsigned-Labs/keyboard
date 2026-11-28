@@ -2,13 +2,11 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Check, ChevronDown, Search } from "lucide-react";
-import { TransliterationSchema } from "@/hooks/useTransliterator";
 
 interface Language {
   id: string;
   name: string;
   nativeName: string;
-  schema: TransliterationSchema | null;
 }
 
 interface LanguageSelectorProps {

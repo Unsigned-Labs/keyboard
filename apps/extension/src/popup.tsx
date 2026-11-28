@@ -9,22 +9,39 @@ import Image from "./images/ImageShim";
 import { createRoot } from "react-dom/client";
 import { ThemeProvider, useTheme } from "@/components/app/ThemeProvider";
 import LanguageSelector from "@/components/LanguageSelector";
+import { DEFAULT_INPUT_METHOD, typingInputMethods } from "./packs";
+
+type Language = { id: string; name: string; nativeName: string };
 
 const PopupContent: React.FC = () => {
   const [isEnabled, setIsEnabled] = useState(true);
   const { theme, toggleTheme } = useTheme();
 
-  const languages = [
-    { id: "assamese", name: "Assamese", nativeName: "অসমীয়া" },
-    { id: "bangla", name: "Bangla", nativeName: "বাংলা" },
-    { id: "hindi", name: "Hindi", nativeName: "हिंदी" },
-  ];
-
-  const [selectedLanguage, setSelectedLanguage] = React.useState(languages[0]);
+  const [languages, setLanguages] = useState<Language[]>([]);
+  const [selectedId, setSelectedId] = useState(DEFAULT_INPUT_METHOD);
+  const selectedLanguage = languages.find((l) => l.id === selectedId) ??
+    languages[0] ?? { id: DEFAULT_INPUT_METHOD, name: "Assamese", nativeName: "অসমীয়া" };
 
   useEffect(() => {
-    chrome.storage.sync.get("isEnabled", (data) => setIsEnabled(data.isEnabled ?? true));
+    chrome.storage.sync.get(["isEnabled", "inputMethod"], (data) => {
+      setIsEnabled(data.isEnabled ?? true);
+      if (data.inputMethod) setSelectedId(data.inputMethod);
+    });
+    typingInputMethods().then((ims) =>
+      setLanguages(
+        ims.map((im) => ({
+          id: im.id,
+          name: im.language?.name ?? im.name,
+          nativeName: im.language?.native_name ?? im.name,
+        }))
+      )
+    );
   }, []);
+
+  const handleLanguageChange = (language: Language) => {
+    setSelectedId(language.id);
+    chrome.storage.sync.set({ inputMethod: language.id });
+  };
 
   const handleToggle = (checked: boolean) => {
     setIsEnabled(checked);
@@ -83,7 +100,7 @@ const PopupContent: React.FC = () => {
             <LanguageSelector
               languages={languages}
               selectedLanguage={selectedLanguage}
-              onLanguageChange={(lang) => setSelectedLanguage(lang)}
+              onLanguageChange={handleLanguageChange}
             />
           </div>
 

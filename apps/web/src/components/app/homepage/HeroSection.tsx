@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { TransliterationSchema } from "@/hooks/useTransliterator";
+import type { Candidate } from "@/lib/packs";
 import InputSection from "@/components/app/shared/InputSection";
 import LanguageSelector from "@/components/app/shared/LanguageSelector";
 
@@ -9,7 +9,6 @@ interface Language {
   id: string;
   name: string;
   nativeName: string;
-  schema: TransliterationSchema | null;
 }
 
 interface HeroSectionProps {
@@ -20,6 +19,8 @@ interface HeroSectionProps {
   transliteratedOutput: string;
   onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onDirectInputChange: (newInput: string) => void;
+  suggestions: Candidate[];
+  onPickSuggestion: (text: string) => void;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({
@@ -30,6 +31,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   transliteratedOutput,
   onInputChange,
   onDirectInputChange,
+  suggestions,
+  onPickSuggestion,
 }) => {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
@@ -120,6 +123,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               transliteratedOutput={transliteratedOutput}
               onChange={onInputChange}
               onInputChange={onDirectInputChange}
+              suggestions={suggestions}
+              onPickSuggestion={onPickSuggestion}
             />
           </div>
         </div>

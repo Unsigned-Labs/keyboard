@@ -1,15 +1,26 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import CopyButton from "./CopyButton";
+import type { Candidate } from "@/lib/packs";
 
 interface InputSectionProps {
   input: string;
   transliteratedOutput: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onInputChange: (newInput: string) => void;
+  /** Candidates for the word being typed; the first is what the output already shows. */
+  suggestions: Candidate[];
+  onPickSuggestion: (text: string) => void;
 }
 
-const InputSection: React.FC<InputSectionProps> = ({ input, transliteratedOutput, onChange, onInputChange }) => {
+const InputSection: React.FC<InputSectionProps> = ({
+  input,
+  transliteratedOutput,
+  onChange,
+  onInputChange,
+  suggestions,
+  onPickSuggestion,
+}) => {
   const { toast } = useToast();
   const [cursorPosition, setCursorPosition] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
@@ -160,7 +171,27 @@ const InputSection: React.FC<InputSectionProps> = ({ input, transliteratedOutput
         </div>
       </div>
 
-      
+      <div className="flex flex-wrap gap-2 mt-3 min-h-[2.5rem]" aria-label="Suggestions">
+        {suggestions.map((s, i) => (
+          <button
+            key={`${i}-${s.text}`}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              onPickSuggestion(s.text);
+              textareaRef.current?.focus();
+            }}
+            className={`px-3 py-1.5 rounded-lg border text-base transition-colors ${
+              i === 0
+                ? "border-purple/50 bg-purple/10 font-semibold"
+                : "border-border bg-card/80 hover:border-purple/30"
+            }`}
+            title={s.kind === "latin" ? "Keep as typed" : s.kind}
+          >
+            {s.text}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

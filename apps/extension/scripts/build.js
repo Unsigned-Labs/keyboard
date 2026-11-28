@@ -131,12 +131,52 @@ function copyExtensionFiles(browser) {
   });
 }
 
+// Copies the repo's language packs (modules/) into the extension as packs/, with an index.json the
+// background script uses to load only what the chosen input method needs.
+function copyPacks(browser) {
+  const modules = path.join(rootDir, "..", "..", "modules");
+  const dest = path.join(outputDir, browser, "packs");
+  fs.ensureDirSync(dest);
+  const files = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith(".json")) files.push(full);
+    }
+  };
+  walk(modules);
+  const index = files.sort().map((file) => {
+    const pack = fs.readJsonSync(file);
+    const { id, kind } = pack.resource;
+    const im = pack.input_method;
+    fs.copySync(file, path.join(dest, `${id}.json`));
+    return {
+      id,
+      kind,
+      file: `${id}.json`,
+      name: (im && im.name) || (pack.layout && pack.layout.name) || (pack.language && pack.language.name) || id,
+      language: pack.language || null,
+      dependencies: im ? [im.layout, im.transliteration, im.dictionary].filter(Boolean) : [],
+      transliteration: (im && im.transliteration) || null,
+    };
+  });
+  fs.writeJsonSync(path.join(dest, "index.json"), index, { spaces: 2 });
+  fs.copySync(
+    path.join(rootDir, "node_modules", "@unsigned", "transliterator-wasm", "transliterator_wasm_bg.wasm"),
+    path.join(outputDir, browser, "transliterator_wasm_bg.wasm")
+  );
+  console.log(`Copied ${index.length} packs to ${dest}`);
+}
+
 async function build() {
   try {
     await runWebpack("chrome");
     copyExtensionFiles("chrome");
+    copyPacks("chrome");
     await runWebpack("firefox");
     copyExtensionFiles("firefox");
+    copyPacks("firefox");
     console.log("Build process completed successfully.");
   } catch (error) {
     console.error("Build process failed:", error);
