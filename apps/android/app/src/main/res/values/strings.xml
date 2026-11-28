@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Unsigned Keyboard</string>
-    <string name="ime_name">Unsigned Keyboard</string>
-    <string name="ime_settings">Unsigned Keyboard Settings</string>
+    <string name="app_name">Keyboard by Unsigned</string>
+    <string name="ime_name">Keyboard by Unsigned</string>
+    <string name="ime_settings">Keyboard by Unsigned Settings</string>
 
     <string-array name="theme_names">
         <item>Light</item>

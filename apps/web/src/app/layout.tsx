@@ -6,7 +6,7 @@ import Header from "@/components/app/shared/Header";
 import Footer from "@/components/app/shared/Footer";
 
 export const metadata: Metadata = {
-  title: "Unsigned Keyboard",
+  title: "Keyboard by Unsigned",
   description: "Write Indian languages online",
 };
 

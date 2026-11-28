@@ -75,6 +75,10 @@ let t = Transliterator::new(hindi_schema());
 let result = t.transliterate("namaste"); // नमस्ते
 ```
 
+## Prod
+
+The Android app is published via [Zapstore](https://zapstore.dev/docs/publish). The config and .env for Zapstore are inside of `apps/android`.
+
 ## License
 
 MIT

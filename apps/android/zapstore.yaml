@@ -1,0 +1,6 @@
+name: Keyboard by Unsigned
+repository: https://gitworkshop.dev/unsigned.in/keyboard
+assets:
+  - app/build/outputs/apk/release/.*.apk
+remote_metadata:
+  - github
