@@ -8,9 +8,9 @@
         <item quantity="one">%1$d of %2$d style selected · Choose what the globe key switches between</item>
         <item quantity="other">%1$d of %2$d styles selected · Choose what the globe key switches between</item>
     </plurals>
-    <string name="settings_style_phonetic">%1$s · Phonetic (Latin keys)</string>
+    <string name="settings_style_phonetic">%1$s · Phonetic (native-script output)</string>
     <string name="settings_style_native">%1$s · Native script keys</string>
-    <string name="settings_style_latin">%1$s · Latin keys</string>
+    <string name="settings_style_latin">%1$s · Latin letters (as typed)</string>
     <string name="settings_style_named">%1$s — %2$s</string>
     <string name="settings_style_basic_english">Basic English</string>
     <string name="settings_style_basic_summary">Basic English · No installed typing styles are ready</string>

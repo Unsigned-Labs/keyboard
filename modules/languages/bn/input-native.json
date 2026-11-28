@@ -1,0 +1,25 @@
+{
+  "format_version": 1,
+  "language": {
+    "tag": "bn",
+    "script": "Beng",
+    "name": "Bangla",
+    "native_name": "বাংলা"
+  },
+  "resource": {
+    "id": "in.unsigned.input.bn.native",
+    "kind": "input_method",
+    "version": "1.0.0",
+    "engine": {
+      "abi": 1,
+      "minimum_runtime_version": "0.1.0"
+    },
+    "license": "MIT",
+    "attribution": "Unsigned Labs"
+  },
+  "input_method": {
+    "name": "বাংলা (বর্ণমালা)",
+    "short_label": "ব",
+    "layout": "in.unsigned.layout.bn.native"
+  }
+}

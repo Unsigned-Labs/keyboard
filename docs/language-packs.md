@@ -132,6 +132,15 @@ same files. An invalid file is never installed; the error names the field (for e
 
 ## Android
 
+Assamese, Bangla and Hindi each have three typing styles in **Languages & typing styles**:
+
+- **Phonetic**: type on QWERTY and get words in the language’s script.
+- **Native script**: type letters and vowel signs on an on-screen keyboard for that script.
+- **Latin letters**: use the same QWERTY layout as phonetic mode, but keep the text exactly as typed.
+  For example, Assamese Latin keeps `ki kori asa tumi?` as written. This mode does not use the
+  English word list or suggest script conversions.
+
+
 - Bundled packs: `modules/**/*.json` are copied into the APK as `assets/packs/` at build time.
 - Imported packs: Settings → Language packs → Import pack from file, or open a `.json` pack with
   the app from a file manager. The file is validated first and only then copied to the app's own

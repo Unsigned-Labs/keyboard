@@ -347,6 +347,54 @@ mod tests {
     }
 
     #[test]
+    fn indic_languages_offer_distinct_latin_and_native_keyboards() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../modules");
+        let mut files = Vec::new();
+        json_files(&root, &mut files);
+        let mut store = PackStore::new();
+        for file in files {
+            store.load(&std::fs::read(file).unwrap()).unwrap();
+        }
+        for (tag, text, base, vowel, sign, virama, digit) in [
+            ("as", "ki kori asa tumi?", "ক", "ই", "ি", "্", None),
+            ("bn", "tumi kemon acho?", "ক", "ই", "ি", "্", Some("১")),
+            ("hi", "aap kaise hain?", "क", "इ", "ि", "्", Some("१")),
+        ] {
+            let id = format!("in.unsigned.input.{tag}.latin");
+            let Some(Pack::InputMethod(latin)) = store.get(&id) else {
+                panic!("missing Latin typing style for {tag}");
+            };
+            assert_eq!(latin.input_method.layout, "in.unsigned.layout.qwerty");
+            assert!(latin.input_method.transliteration.is_none());
+            assert!(latin.input_method.dictionary.is_none());
+            assert_eq!(store.convert(&id, text), text);
+
+            let id = format!("in.unsigned.input.{tag}.native");
+            let Some(Pack::InputMethod(native)) = store.get(&id) else {
+                panic!("missing native typing style for {tag}");
+            };
+            assert!(native.input_method.transliteration.is_none());
+            let Some(Pack::KeyboardLayout(layout)) = store.get(&native.input_method.layout) else {
+                panic!("missing direct layout for {tag}");
+            };
+            let keys: Vec<_> = layout
+                .layout
+                .pages
+                .iter()
+                .flat_map(|p| &p.rows)
+                .flat_map(|r| &r.keys)
+                .collect();
+            assert!(keys.iter().any(|k| k.output.as_deref() == Some(base)));
+            assert!(keys.iter().any(|k| k.output.as_deref() == Some(vowel)
+                && k.after_consonant.as_deref() == Some(sign)));
+            assert!(keys.iter().any(|k| k.output.as_deref() == Some(virama)));
+            if let Some(digit) = digit {
+                assert!(keys.iter().any(|k| k.output.as_deref() == Some(digit)));
+            }
+        }
+    }
+
+    #[test]
     fn every_bundled_pack_loads_and_every_input_method_is_complete() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../modules");
         let mut files = Vec::new();

@@ -1,0 +1,25 @@
+{
+  "format_version": 1,
+  "language": {
+    "tag": "as",
+    "script": "Latn",
+    "name": "Assamese",
+    "native_name": "অসমীয়া"
+  },
+  "resource": {
+    "id": "in.unsigned.input.as.latin",
+    "kind": "input_method",
+    "version": "1.0.0",
+    "engine": {
+      "abi": 1,
+      "minimum_runtime_version": "0.1.0"
+    },
+    "license": "MIT",
+    "attribution": "Unsigned Labs"
+  },
+  "input_method": {
+    "name": "অসমীয়া (Latin)",
+    "short_label": "AS",
+    "layout": "in.unsigned.layout.qwerty"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "format_version": 1,
+  "language": {
+    "tag": "hi",
+    "script": "Deva",
+    "name": "Hindi",
+    "native_name": "हिन्दी"
+  },
+  "resource": {
+    "id": "in.unsigned.input.hi.native",
+    "kind": "input_method",
+    "version": "1.0.0",
+    "engine": {
+      "abi": 1,
+      "minimum_runtime_version": "0.1.0"
+    },
+    "license": "MIT",
+    "attribution": "Unsigned Labs"
+  },
+  "input_method": {
+    "name": "हिन्दी (देवनागरी)",
+    "short_label": "ह",
+    "layout": "in.unsigned.layout.hi.native"
+  }
+}
