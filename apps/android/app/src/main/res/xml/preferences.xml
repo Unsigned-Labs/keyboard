@@ -14,6 +14,13 @@
             android:title="Input method"
             android:icon="@android:drawable/ic_menu_compass" />
 
+        <SwitchPreferenceCompat
+            android:key="suggestions"
+            android:title="Suggestions"
+            android:summary="Pick words from the dictionary and show other spellings above the keys"
+            android:defaultValue="true"
+            android:icon="@android:drawable/ic_menu_search" />
+
         <MultiSelectListPreference
             android:key="enabled_input_methods"
             android:title="Input methods on the 🌐 key"

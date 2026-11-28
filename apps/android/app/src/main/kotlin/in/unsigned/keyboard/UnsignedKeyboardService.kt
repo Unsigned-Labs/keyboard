@@ -10,6 +10,7 @@ import `in`.unsigned.keyboard.layout.LayoutInput
 import `in`.unsigned.keyboard.packs.InputMethodInfo
 import `in`.unsigned.keyboard.packs.PackRepository
 import `in`.unsigned.keyboard.theme.KeyboardTheme
+import org.json.JSONArray
 
 class UnsignedKeyboardService : InputMethodService() {
 
@@ -20,6 +21,8 @@ class UnsignedKeyboardService : InputMethodService() {
     /** Characters the active transliteration takes; other keys are typed as they are. */
     private var alphabet: String = ""
     private val composing = StringBuilder()
+    /** Candidates for [composing]; the first is shown in the text field and committed by space. */
+    private var candidates: List<String> = emptyList()
 
     private val prefs get() = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -33,6 +36,7 @@ class UnsignedKeyboardService : InputMethodService() {
             override fun onEnter() = enter()
             override fun onNextInputMethod() = switchToNext()
             override fun onInputMethodSelected(id: String) = activate(id)
+            override fun onCandidateSelected(index: Int) = pickCandidate(index)
         })
         applyPreferences()
         return keyboardView
@@ -49,6 +53,7 @@ class UnsignedKeyboardService : InputMethodService() {
     override fun onFinishInput() {
         super.onFinishInput()
         composing.clear()
+        setCandidates(emptyList())
     }
 
     private fun applyPreferences() {
@@ -57,6 +62,8 @@ class UnsignedKeyboardService : InputMethodService() {
         keyboardView.setTheme(theme)
         keyboardView.setFeedbackPreferences(prefs.getBoolean("vibration", true), prefs.getBoolean("sound", true))
     }
+
+    private val suggestionsEnabled get() = prefs.getBoolean(PREF_SUGGESTIONS, true)
 
     private fun enabledInputMethods(): List<InputMethodInfo> {
         val all = PackRepository.inputMethods()
@@ -81,6 +88,8 @@ class UnsignedKeyboardService : InputMethodService() {
 
         keyboardView.setInputMethods(enabled, im.id)
         keyboardView.setLayout(imLayout, im.shortLabel)
+        keyboardView.setSuggestionStripVisible(suggestionsEnabled && im.transliterationId != null && alphabet.isNotEmpty())
+        keyboardView.setCandidates(emptyList())
     }
 
     /** Maps the language setting of versions before packs to the matching input method. */
@@ -104,7 +113,7 @@ class UnsignedKeyboardService : InputMethodService() {
 
         if (transliteration != null && alphabet.isNotEmpty() && text.all { it in alphabet }) {
             composing.append(text)
-            ic.setComposingText(Engine.transliterate(transliteration, composing.toString()), 1)
+            showComposing(ic)
             return
         }
 
@@ -124,12 +133,12 @@ class UnsignedKeyboardService : InputMethodService() {
         val ic = currentInputConnection ?: return
         if (composing.isNotEmpty()) {
             composing.deleteCharAt(composing.length - 1)
-            val transliteration = inputMethod?.transliterationId
-            if (composing.isEmpty() || transliteration == null) {
-                ic.setComposingText(composing.toString(), 1)
-                if (composing.isEmpty()) ic.finishComposingText()
+            if (composing.isEmpty()) {
+                ic.setComposingText("", 1)
+                ic.finishComposingText()
+                setCandidates(emptyList())
             } else {
-                ic.setComposingText(Engine.transliterate(transliteration, composing.toString()), 1)
+                showComposing(ic)
             }
             return
         }
@@ -143,11 +152,45 @@ class UnsignedKeyboardService : InputMethodService() {
         }
     }
 
+    /** Shows the best candidate for the composing text in the field, and the rest in the strip. */
+    private fun showComposing(ic: InputConnection) {
+        val im = inputMethod ?: return
+        val typed = composing.toString()
+        val list = if (suggestionsEnabled) {
+            val json = JSONArray(Engine.candidates(im.id, typed, CANDIDATE_LIMIT))
+            (0 until json.length()).map { json.getJSONObject(it).getString("text") }
+        } else {
+            emptyList()
+        }
+        val shown = list.firstOrNull()
+            ?: im.transliterationId?.let { Engine.transliterate(it, typed) }
+            ?: typed
+        setCandidates(list)
+        ic.setComposingText(shown, 1)
+    }
+
+    private fun setCandidates(list: List<String>) {
+        candidates = list
+        if (::keyboardView.isInitialized) keyboardView.setCandidates(list)
+    }
+
+    /** Commits a candidate from the strip, followed by a space. */
+    private fun pickCandidate(index: Int) {
+        val ic = currentInputConnection ?: return
+        val text = candidates.getOrNull(index) ?: return
+        ic.setComposingText(text, 1)
+        ic.finishComposingText()
+        composing.clear()
+        setCandidates(emptyList())
+        ic.commitText(" ", 1)
+    }
+
     private fun finishComposing() {
         if (composing.isNotEmpty()) {
             currentInputConnection?.finishComposingText()
             composing.clear()
         }
+        setCandidates(emptyList())
     }
 
     private fun commitWithSeparator(separator: String) {
@@ -171,5 +214,7 @@ class UnsignedKeyboardService : InputMethodService() {
     companion object {
         const val PREF_INPUT_METHOD = "input_method"
         const val PREF_ENABLED = "enabled_input_methods"
+        const val PREF_SUGGESTIONS = "suggestions"
+        private const val CANDIDATE_LIMIT = 8
     }
 }

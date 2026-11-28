@@ -20,4 +20,7 @@ object Engine {
     external fun transliterate(transliterationId: String, input: String): String
 
     external fun inputAlphabet(transliterationId: String): String
+
+    /** Ranked candidates as a JSON array of {text, kind}; the first is what space commits. */
+    external fun candidates(inputMethodId: String, input: String, limit: Int): String
 }

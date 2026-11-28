@@ -113,3 +113,18 @@ pub extern "C" fn Java_in_unsigned_keyboard_Engine_inputAlphabet(
     let alphabet = store().input_alphabet(&id);
     java_string(&mut env, alphabet)
 }
+
+/// Ranked candidates for an input method's composing text, as a JSON array of {text, kind}.
+#[no_mangle]
+pub extern "C" fn Java_in_unsigned_keyboard_Engine_candidates(
+    mut env: JNIEnv,
+    _class: JClass,
+    input_method_id: JString,
+    input: JString,
+    limit: jni::sys::jint,
+) -> jstring {
+    let id = string(&mut env, &input_method_id);
+    let input = string(&mut env, &input);
+    let candidates = store().candidates(&id, &input, limit.max(1) as usize);
+    java_string(&mut env, serde_json::to_string(&candidates).unwrap())
+}

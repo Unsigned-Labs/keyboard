@@ -47,6 +47,7 @@ class UnsignedKeyboardView @JvmOverloads constructor(
         fun onEnter()
         fun onNextInputMethod()
         fun onInputMethodSelected(id: String)
+        fun onCandidateSelected(index: Int)
     }
 
     private var listener: Listener? = null
@@ -59,6 +60,14 @@ class UnsignedKeyboardView @JvmOverloads constructor(
     private var inputMethodLabel = "🌐"
     private var inputMethods: List<InputMethodInfo> = emptyList()
     private var currentInputMethodId: String? = null
+
+    private var candidates: List<String> = emptyList()
+    private var candidateCells: List<Pair<RectF, Int>> = emptyList()
+    private var showStrip = true
+    private val stripHeight get() = if (showStrip) 40 * context.resources.displayMetrics.density else 0f
+    private val candidatePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val candidateBoldPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val separatorPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private var computedKeys = listOf<ComputedKey>()
     private var layoutEngine: LayoutEngine? = null
@@ -145,6 +154,18 @@ class UnsignedKeyboardView @JvmOverloads constructor(
         currentInputMethodId = currentId
     }
 
+    /** Suggestions for the word being typed; the first one is what space will commit. */
+    fun setCandidates(list: List<String>) {
+        candidates = list
+        invalidate()
+    }
+
+    fun setSuggestionStripVisible(visible: Boolean) {
+        if (visible == showStrip) return
+        showStrip = visible
+        requestLayout()
+    }
+
     fun setTheme(theme: KeyboardTheme) {
         colorScheme = theme.getColorScheme()
         applyColorScheme()
@@ -174,6 +195,18 @@ class UnsignedKeyboardView @JvmOverloads constructor(
             paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         }
         hintPaint.textSize = 28f
+        candidatePaint.apply {
+            color = colorScheme.textPrimary
+            textSize = 46f
+            textAlign = Paint.Align.CENTER
+        }
+        candidateBoldPaint.apply {
+            color = colorScheme.textPrimary
+            textSize = 46f
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        }
+        separatorPaint.color = colorScheme.keyboardSeparator
         shadowPaint.apply {
             color = colorScheme.shadow
             style = Paint.Style.FILL
@@ -184,26 +217,30 @@ class UnsignedKeyboardView @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val rowHeightDp = 52
-        val height = (rowCount * rowHeightDp * context.resources.displayMetrics.density).toInt()
+        val height = (rowCount * rowHeightDp * context.resources.displayMetrics.density + stripHeight).toInt()
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), height)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        layoutEngine = LayoutEngine(w, h)
+        layoutEngine = LayoutEngine(w, (h - stripHeight).toInt())
         updateLayout()
     }
 
     private fun updateLayout() {
         val engine = layoutEngine ?: return
         val page = activeLayout.page(pageId)
-        computedKeys = engine.computeLayout(page, rowCount, isShifted || capsLock)
+        val top = stripHeight
+        computedKeys = engine.computeLayout(page, rowCount, isShifted || capsLock).map {
+            it.copy(bounds = RectF(it.bounds).apply { offset(0f, top) })
+        }
         invalidate()
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), backgroundPaint)
+        drawCandidates(canvas)
         for (key in computedKeys) {
             val shadow = RectF(key.bounds).apply { top += 4f; bottom += 4f }
             canvas.drawRoundRect(shadow, 12f, 12f, shadowPaint)
@@ -239,6 +276,26 @@ class UnsignedKeyboardView @JvmOverloads constructor(
         }
     }
 
+    /** Lays candidates out left to right at their natural width, as many as fit. */
+    private fun drawCandidates(canvas: Canvas) {
+        if (!showStrip) return
+        val cells = mutableListOf<Pair<RectF, Int>>()
+        var x = 0f
+        val h = stripHeight
+        candidates.forEachIndexed { i, text ->
+            val paint = if (i == 0) candidateBoldPaint else candidatePaint
+            val w = maxOf(paint.measureText(text) + 64f, width / 4f)
+            if (x + w > width && cells.isNotEmpty()) return@forEachIndexed
+            val cell = RectF(x, 0f, minOf(x + w, width.toFloat()), h)
+            cells += cell to i
+            val y = cell.centerY() - (paint.descent() + paint.ascent()) / 2
+            canvas.drawText(text, cell.centerX(), y, paint)
+            if (i > 0) canvas.drawRect(cell.left, h * 0.25f, cell.left + 2f, h * 0.75f, separatorPaint)
+            x += w
+        }
+        candidateCells = cells
+    }
+
     private fun pressedPaint(style: KeyVisualStyle): Paint {
         keyPressedPaint.color = when (style) {
             KeyVisualStyle.NORMAL, KeyVisualStyle.SPACEBAR -> colorScheme.keyNormalPressed
@@ -257,6 +314,13 @@ class UnsignedKeyboardView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
+                if (event.y < stripHeight) {
+                    candidateCells.firstOrNull { it.first.contains(event.x, event.y) }?.let { (_, index) ->
+                        performHapticFeedback()
+                        listener?.onCandidateSelected(index)
+                    }
+                    return true
+                }
                 val key = computedKeys.find { it.bounds.contains(event.x, event.y) } ?: return true
                 pressedKey = key
                 longPressFired = false
