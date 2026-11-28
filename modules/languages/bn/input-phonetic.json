@@ -1,0 +1,27 @@
+{
+  "format_version": 1,
+  "language": {
+    "tag": "bn",
+    "script": "Beng",
+    "name": "Bangla",
+    "native_name": "বাংলা"
+  },
+  "resource": {
+    "id": "org.unsigned.input.bn.phonetic",
+    "kind": "input_method",
+    "version": "1.0.0",
+    "engine": {
+      "abi": 1,
+      "minimum_runtime_version": "0.1.0"
+    },
+    "license": "MIT",
+    "attribution": "Unsigned Labs"
+  },
+  "input_method": {
+    "name": "বাংলা (ফোনেটিক)",
+    "short_label": "বা",
+    "layout": "org.unsigned.layout.qwerty",
+    "transliteration": "org.unsigned.transliteration.bn",
+    "dictionary": "org.unsigned.dictionary.bn"
+  }
+}

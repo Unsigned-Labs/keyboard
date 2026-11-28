@@ -98,6 +98,7 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "unsigned-resource-format",
 ]
 
 [[package]]
@@ -105,3 +106,11 @@ name = "unicode-ident"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "462eeb75aeb73aea900253ce739c8e18a67423fadf006037cd3ff27e82748a06"
+
+[[package]]
+name = "unsigned-resource-format"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]

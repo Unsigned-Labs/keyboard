@@ -64,3 +64,68 @@ pub fn bangla_schema() -> Result<JsValue, JsValue> {
     serde_wasm_bindgen::to_value(&transliterator::bangla_schema())
         .map_err(|e| JsValue::from_str(&e.to_string()))
 }
+
+/// Language packs loaded from JSON, shared by every input method on the page.
+#[wasm_bindgen]
+pub struct PackStore {
+    inner: transliterator::PackStore,
+}
+
+#[wasm_bindgen]
+impl PackStore {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> PackStore {
+        PackStore {
+            inner: transliterator::PackStore::new(),
+        }
+    }
+
+    /// Validates and loads a pack; returns its info as JSON, or throws with the reason.
+    #[wasm_bindgen(js_name = loadPack)]
+    pub fn load_pack(&mut self, json: &str) -> Result<String, JsValue> {
+        self.inner
+            .load(json.as_bytes())
+            .map(|info| serde_json::to_string(&info).unwrap())
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    /// All loaded packs as a JSON array.
+    pub fn list(&self) -> String {
+        serde_json::to_string(&self.inner.list()).unwrap()
+    }
+
+    #[wasm_bindgen(js_name = packJson)]
+    pub fn pack_json(&self, id: &str) -> Option<String> {
+        self.inner.get(id).map(|p| p.to_json())
+    }
+
+    #[wasm_bindgen(js_name = missingDependencies)]
+    pub fn missing_dependencies(&self, input_method_id: &str) -> String {
+        serde_json::to_string(&self.inner.missing_dependencies(input_method_id)).unwrap()
+    }
+
+    pub fn transliterate(&self, transliteration_id: &str, input: &str) -> String {
+        self.inner.transliterate(transliteration_id, input)
+    }
+
+    #[wasm_bindgen(js_name = inputAlphabet)]
+    pub fn input_alphabet(&self, transliteration_id: &str) -> String {
+        self.inner.input_alphabet(transliteration_id)
+    }
+
+    /// Converts a whole text word by word, taking each word's best candidate.
+    pub fn convert(&self, input_method_id: &str, text: &str) -> String {
+        self.inner.convert(input_method_id, text)
+    }
+
+    /// Ranked candidates as a JSON array of {text, kind}; the first is what space commits.
+    pub fn candidates(&self, input_method_id: &str, input: &str, limit: usize) -> String {
+        serde_json::to_string(&self.inner.candidates(input_method_id, input, limit)).unwrap()
+    }
+}
+
+impl Default for PackStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}

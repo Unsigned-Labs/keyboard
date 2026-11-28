@@ -1,152 +1,208 @@
 #!/usr/bin/env python3
 """IBus Engine for Unsigned Keyboard Input Method"""
 
+import json
 import os
-import sys
 import subprocess
+import sys
 from gi import require_version
 require_version('IBus', '1.0')
 from gi.repository import IBus, GLib
 
+# IBus engine name -> input method pack id.
+INPUT_METHODS = {
+    "unsigned-assamese": "org.unsigned.input.as.phonetic",
+    "unsigned-bangla": "org.unsigned.input.bn.phonetic",
+    "unsigned-hindi": "org.unsigned.input.hi.phonetic",
+}
+
+SELECT_KEYS = {getattr(IBus, f"KEY_{n}"): n - 1 for n in range(1, 10)}
+
+
+def find_engine_binary():
+    """Find the Rust engine binary."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    paths = [
+        "/usr/local/bin/ibus-engine-unsigned",
+        "/usr/bin/ibus-engine-unsigned",
+        os.path.expanduser("~/.local/bin/ibus-engine-unsigned"),
+        os.path.join(here, "target/release/ibus-engine-unsigned"),
+        os.path.join(here, "../target/release/ibus-engine-unsigned"),
+    ]
+    for path in paths:
+        if os.path.exists(path):
+            return path
+    return "ibus-engine-unsigned"
+
+
+class Backend:
+    """One long-running Rust engine process, restarted if it dies."""
+
+    def __init__(self):
+        self.proc = None
+
+    def _start(self):
+        self.proc = subprocess.Popen(
+            [find_engine_binary()],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+        )
+        self.proc.stdout.readline()  # READY
+
+    def ask(self, line):
+        for _ in range(2):
+            try:
+                if self.proc is None or self.proc.poll() is not None:
+                    self._start()
+                self.proc.stdin.write(line + "\n")
+                self.proc.stdin.flush()
+                return self.proc.stdout.readline().rstrip("\n")
+            except (OSError, ValueError) as e:
+                print(f"engine error: {e}", file=sys.stderr)
+                self.proc = None
+        return ""
+
+
+BACKEND = Backend()
+
+
 class UnsignedEngine(IBus.Engine):
-    """Input Method Engine for transliteration"""
+    """Transliterating input method with dictionary suggestions."""
 
     def __init__(self):
         super().__init__()
-        self.preedit = ""
-        self.engine_path = self._find_engine_binary()
-        self.schema = "assamese"  # Default as requested
+        self.buffer = ""
+        self.candidates = []
+        self.table = IBus.LookupTable.new(9, 0, True, True)
+        self.table.set_orientation(IBus.Orientation.HORIZONTAL)
 
-    def _find_engine_binary(self):
-        """Find the Rust engine binary"""
-        # Check in order: installed location, local build, development build
-        paths = [
-            "/usr/local/bin/ibus-engine-unsigned",
-            "/usr/bin/ibus-engine-unsigned",
-            os.path.expanduser("~/.local/bin/ibus-engine-unsigned"),
-            os.path.join(os.path.dirname(__file__), "../target/release/ibus-engine-unsigned"),
-            os.path.join(os.path.dirname(__file__), "target/release/ibus-engine-unsigned"),
-        ]
-
-        for path in paths:
-            if os.path.exists(path):
-                return path
-
-        # Fallback - will fail but with clear error
-        return "ibus-engine-unsigned"
-
-    def _transliterate(self, text):
-        """Call Rust backend to transliterate text"""
+    def _input_method(self):
         try:
-            result = subprocess.run(
-                [self.engine_path],
-                input=f"TRANSLITERATE {text}\nQUIT\n",
-                capture_output=True,
-                text=True,
-                timeout=1
-            )
+            name = self.get_name()
+        except Exception:
+            name = ""
+        return INPUT_METHODS.get(name, INPUT_METHODS["unsigned-assamese"])
 
-            for line in result.stdout.split('\n'):
-                if line.startswith('RESULT '):
-                    return line[7:].strip()
+    def _refresh(self):
+        if not self.buffer:
+            self.candidates = []
+            self.hide_preedit_text()
+            self.hide_lookup_table()
+            return
+        BACKEND.ask(f"SET_INPUT_METHOD {self._input_method()}")
+        reply = BACKEND.ask(f"CANDIDATES {self.buffer}")
+        try:
+            self.candidates = [c["text"] for c in json.loads(reply.split(" ", 1)[1])]
+        except (IndexError, ValueError, KeyError):
+            self.candidates = []
+        if not self.candidates:
+            self.candidates = [self.buffer]
 
-            return text  # Fallback to original if no result
-        except Exception as e:
-            print(f"Transliteration error: {e}", file=sys.stderr)
-            return text
+        self.table.clear()
+        for text in self.candidates:
+            self.table.append_candidate(IBus.Text.new_from_string(text))
+        self.table.set_cursor_pos(0)
+        self.update_lookup_table(self.table, len(self.candidates) > 1)
+        self._show_preedit()
+
+    def _show_preedit(self):
+        text = self.candidates[self.table.get_cursor_pos()] if self.candidates else self.buffer
+        preedit = IBus.Text.new_from_string(text)
+        attrs = IBus.AttrList()
+        attrs.append(IBus.attr_underline_new(IBus.AttrUnderline.SINGLE, 0, len(text)))
+        preedit.set_attributes(attrs)
+        self.update_preedit_text(preedit, len(text), True)
+
+    def _commit(self, index=None):
+        if not self.buffer:
+            return
+        if index is None:
+            index = self.table.get_cursor_pos()
+        text = self.candidates[index] if 0 <= index < len(self.candidates) else self.buffer
+        self.commit_text(IBus.Text.new_from_string(text))
+        self._clear()
+
+    def _clear(self):
+        self.buffer = ""
+        self.candidates = []
+        self.hide_preedit_text()
+        self.hide_lookup_table()
 
     def do_process_key_event(self, keyval, keycode, state):
-        """Handle key press events"""
-        # Ignore release events
         if state & IBus.ModifierType.RELEASE_MASK:
             return False
-
-        # Ignore modifier keys
         if state & (IBus.ModifierType.CONTROL_MASK | IBus.ModifierType.MOD1_MASK):
             return False
 
-        # Handle backspace
+        if self.buffer:
+            if keyval in SELECT_KEYS and SELECT_KEYS[keyval] < len(self.candidates):
+                self._commit(SELECT_KEYS[keyval])
+                return True
+            if keyval in (IBus.KEY_Right, IBus.KEY_Down, IBus.KEY_Tab):
+                self.table.cursor_down()
+                self.update_lookup_table(self.table, True)
+                self._show_preedit()
+                return True
+            if keyval in (IBus.KEY_Left, IBus.KEY_Up, IBus.KEY_ISO_Left_Tab):
+                self.table.cursor_up()
+                self.update_lookup_table(self.table, True)
+                self._show_preedit()
+                return True
+
         if keyval == IBus.KEY_BackSpace:
-            if self.preedit:
-                self.preedit = self.preedit[:-1]
-                if self.preedit:
-                    self._update_preedit()
-                else:
-                    self._clear_preedit()
+            if self.buffer:
+                self.buffer = self.buffer[:-1]
+                self._refresh()
                 return True
             return False
 
-        # Handle space - commit current text
         if keyval == IBus.KEY_space:
-            if self.preedit:
-                self._commit_preedit()
+            if self.buffer:
+                self._commit()
                 self.commit_text(IBus.Text.new_from_string(" "))
                 return True
             return False
 
-        # Handle Enter - commit current text
-        if keyval == IBus.KEY_Return:
-            if self.preedit:
-                self._commit_preedit()
-            return False
-
-        # Handle Escape - clear preedit
-        if keyval == IBus.KEY_Escape:
-            if self.preedit:
-                self._clear_preedit()
+        if keyval in (IBus.KEY_Return, IBus.KEY_KP_Enter):
+            if self.buffer:
+                self._commit()
                 return True
             return False
 
-        # Handle regular characters (a-z, A-Z)
-        if keyval >= 0x20 and keyval <= 0x7E:
-            char = chr(keyval)
-            self.preedit += char
-            self._update_preedit()
+        if keyval == IBus.KEY_Escape:
+            if self.buffer:
+                self._clear()
+                return True
+            return False
+
+        if 0x21 <= keyval <= 0x7E:
+            self.buffer += chr(keyval)
+            self._refresh()
             return True
 
+        if self.buffer:
+            self._commit()
         return False
 
-    def _update_preedit(self):
-        """Update preedit text with transliteration"""
-        transliterated = self._transliterate(self.preedit)
-        attrs = IBus.AttrList()
-        attrs.append(IBus.attr_underline_new(IBus.AttrUnderline.SINGLE, 0, len(transliterated)))
-        text = IBus.Text.new_from_string(transliterated)
-        text.set_attributes(attrs)
-        self.update_preedit_text(text, len(transliterated), True)
-
-    def _commit_preedit(self):
-        """Commit the preedit text"""
-        if self.preedit:
-            transliterated = self._transliterate(self.preedit)
-            self.commit_text(IBus.Text.new_from_string(transliterated))
-            self.preedit = ""
-            self.hide_preedit_text()
-
-    def _clear_preedit(self):
-        """Clear the preedit text"""
-        self.preedit = ""
-        self.hide_preedit_text()
+    def do_candidate_clicked(self, index, button, state):
+        self._commit(self.table.get_cursor_pos() // 9 * 9 + index)
 
     def do_focus_in(self):
-        """Called when engine gets focus"""
-        self._clear_preedit()
+        self._clear()
 
     def do_focus_out(self):
-        """Called when engine loses focus"""
-        self._commit_preedit()
+        self._commit()
 
     def do_reset(self):
-        """Reset engine state"""
-        self._clear_preedit()
+        self._clear()
 
     def do_enable(self):
-        """Called when engine is enabled"""
         pass
 
     def do_disable(self):
-        """Called when engine is disabled"""
-        self._commit_preedit()
+        self._commit()
 
 
 class IMApp:

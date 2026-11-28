@@ -29,16 +29,18 @@ echo ""
 echo "Adding Android targets..."
 rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android || true
 
-# Build for all Android architectures
-echo ""
-echo "Building for ARM64..."
-cargo ndk -t arm64-v8a -o ../../apps/android/app/src/main/jniLibs build --release
-
-echo "Building for ARMv7..."
-cargo ndk -t armeabi-v7a -o ../../apps/android/app/src/main/jniLibs build --release
-
-echo "Building for x86_64..."
-cargo ndk -t x86_64 -o ../../apps/android/app/src/main/jniLibs build --release
+# Build for all Android architectures. The libraries are copied from target/ because the
+# `cargo ndk -o` copy step strips the JNI exports in cargo-ndk 4.
+JNI_LIBS=../../apps/android/app/src/main/jniLibs
+for pair in arm64-v8a:aarch64-linux-android armeabi-v7a:armv7-linux-androideabi x86_64:x86_64-linux-android; do
+    abi=${pair%%:*}
+    triple=${pair#*:}
+    echo ""
+    echo "Building for $abi..."
+    cargo ndk -t "$abi" build --release
+    mkdir -p "$JNI_LIBS/$abi"
+    cp "target/$triple/release/libtransliterator.so" "$JNI_LIBS/$abi/"
+done
 
 echo ""
 echo "Build completed successfully!"

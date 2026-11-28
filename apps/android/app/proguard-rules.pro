@@ -5,8 +5,8 @@
     native <methods>;
 }
 
-# Keep Transliterator class
--keep class in.unsigned.keyboard.Transliterator {
+# Keep the JNI engine class
+-keep class in.unsigned.keyboard.Engine {
     public static <methods>;
     native <methods>;
 }

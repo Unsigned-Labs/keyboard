@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory android:title="General">
 
@@ -11,13 +10,33 @@
             android:icon="@android:drawable/ic_menu_preferences" />
 
         <ListPreference
-            android:key="language"
-            android:title="Language"
-            android:summary="Select your preferred language"
-            android:entries="@array/language_names"
-            android:entryValues="@array/language_codes"
-            android:defaultValue="assamese"
+            android:key="input_method"
+            android:title="Input method"
             android:icon="@android:drawable/ic_menu_compass" />
+
+        <SwitchPreferenceCompat
+            android:key="suggestions"
+            android:title="Suggestions"
+            android:summary="Pick words from the dictionary and show other spellings above the keys"
+            android:defaultValue="true"
+            android:icon="@android:drawable/ic_menu_search" />
+
+        <MultiSelectListPreference
+            android:key="enabled_input_methods"
+            android:title="Input methods on the 🌐 key"
+            android:icon="@android:drawable/ic_menu_sort_by_size" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="packs"
+        android:title="Language packs">
+
+        <Preference
+            android:key="import_pack"
+            android:title="Import pack from file"
+            android:summary="Add a layout, transliteration or input method (.json)"
+            android:icon="@android:drawable/ic_menu_add" />
 
     </PreferenceCategory>
 
@@ -57,7 +76,6 @@
         <Preference
             android:key="version"
             android:title="Version"
-            android:summary="1.0.0"
             android:selectable="false"
             android:icon="@android:drawable/ic_menu_info_details" />
 

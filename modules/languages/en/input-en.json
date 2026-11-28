@@ -1,0 +1,25 @@
+{
+  "format_version": 1,
+  "language": {
+    "tag": "en",
+    "script": "Latn",
+    "name": "English",
+    "native_name": "English"
+  },
+  "resource": {
+    "id": "org.unsigned.input.en",
+    "kind": "input_method",
+    "version": "1.0.0",
+    "engine": {
+      "abi": 1,
+      "minimum_runtime_version": "0.1.0"
+    },
+    "license": "MIT",
+    "attribution": "Unsigned Labs"
+  },
+  "input_method": {
+    "name": "English",
+    "short_label": "EN",
+    "layout": "org.unsigned.layout.qwerty"
+  }
+}
