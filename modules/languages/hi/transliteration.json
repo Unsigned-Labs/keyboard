@@ -7,7 +7,7 @@
     "native_name": "हिन्दी"
   },
   "resource": {
-    "id": "org.unsigned.transliteration.hi",
+    "id": "in.unsigned.transliteration.hi",
     "kind": "transliteration",
     "version": "1.0.0",
     "engine": {

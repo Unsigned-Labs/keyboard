@@ -1,6 +1,8 @@
 package `in`.unsigned.keyboard
 
+import android.content.res.Configuration
 import android.inputmethodservice.InputMethodService
+import android.text.InputType
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
@@ -9,6 +11,7 @@ import `in`.unsigned.keyboard.layout.KeyboardLayout
 import `in`.unsigned.keyboard.layout.LayoutInput
 import `in`.unsigned.keyboard.packs.InputMethodInfo
 import `in`.unsigned.keyboard.packs.PackRepository
+import `in`.unsigned.keyboard.theme.AppTheme
 import `in`.unsigned.keyboard.theme.KeyboardTheme
 import org.json.JSONArray
 
@@ -21,8 +24,10 @@ class UnsignedKeyboardService : InputMethodService() {
     /** Characters the active transliteration takes; other keys are typed as they are. */
     private var alphabet: String = ""
     private val composing = StringBuilder()
-    /** Candidates for [composing]; the first is shown in the text field and committed by space. */
+    /** Candidates for [composing]; English never replaces the raw text unless tapped. */
     private var candidates: List<String> = emptyList()
+    private var incognitoRequired = false
+    private var fieldAllowsSuggestions = false
 
     private val prefs get() = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -37,6 +42,7 @@ class UnsignedKeyboardService : InputMethodService() {
             override fun onNextInputMethod() = switchToNext()
             override fun onInputMethodSelected(id: String) = activate(id)
             override fun onCandidateSelected(index: Int) = pickCandidate(index)
+            override fun onToggleIncognito() = toggleIncognito()
         })
         applyPreferences()
         return keyboardView
@@ -47,7 +53,15 @@ class UnsignedKeyboardService : InputMethodService() {
         PackRepository.ensureLoaded(this)
         applyPreferences()
         composing.clear()
-        activate(prefs.getString(PREF_INPUT_METHOD, null) ?: legacyInputMethod())
+        val inputType = info?.inputType ?: InputType.TYPE_NULL
+        incognitoRequired = editorRequiresIncognito(inputType, info?.imeOptions ?: 0)
+        fieldAllowsSuggestions = editorAllowsSuggestions(inputType)
+        activate(prefs.getString(PREF_INPUT_METHOD, null) ?: legacyInputMethod(), remember = false)
+    }
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        finishComposing()
+        super.onFinishInputView(finishingInput)
     }
 
     override fun onFinishInput() {
@@ -56,23 +70,54 @@ class UnsignedKeyboardService : InputMethodService() {
         setCandidates(emptyList())
     }
 
+    override fun onUpdateSelection(
+        oldSelStart: Int, oldSelEnd: Int, newSelStart: Int, newSelEnd: Int,
+        candidatesStart: Int, candidatesEnd: Int
+    ) {
+        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
+        if (composing.isNotEmpty() && (newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
+            finishComposing()
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (::keyboardView.isInitialized) applyPreferences()
+    }
+
     private fun applyPreferences() {
-        val theme = runCatching { KeyboardTheme.valueOf(prefs.getString("theme", "DEFAULT_LIGHT")!!) }
-            .getOrDefault(KeyboardTheme.DEFAULT_LIGHT)
-        keyboardView.setTheme(theme)
+        keyboardView.setTheme(if (AppTheme.isDark(this)) KeyboardTheme.DEFAULT_DARK else KeyboardTheme.DEFAULT_LIGHT)
         keyboardView.setFeedbackPreferences(prefs.getBoolean("vibration", true), prefs.getBoolean("sound", true))
     }
 
-    private val suggestionsEnabled get() = prefs.getBoolean(PREF_SUGGESTIONS, true)
+    private val manualIncognito get() = prefs.getBoolean(PREF_INCOGNITO, false)
+    private val incognito get() = isIncognito(manualIncognito, incognitoRequired)
+    private val suggestionsEnabled
+        get() = !incognito && fieldAllowsSuggestions && prefs.getBoolean(PREF_SUGGESTIONS, true)
+    private val english get() = inputMethod?.let { it.language == "en" && it.transliterationId == null } == true
+    private var englishDictionary: EnglishDictionary? = null
+
+    private fun toggleIncognito() {
+        if (incognitoRequired) return
+        finishComposing()
+        // Persist the user's switch, never their input or private-session language selection.
+        prefs.edit().putBoolean(PREF_INCOGNITO, !manualIncognito).apply()
+        updateSuggestionUi()
+    }
+
+    private fun updateSuggestionUi() {
+        keyboardView.setPrivacyState(incognito, incognitoRequired)
+        keyboardView.setSuggestionStripVisible(suggestionsEnabled && (englishDictionary != null || alphabet.isNotEmpty()))
+    }
 
     private fun enabledInputMethods(): List<InputMethodInfo> {
-        val all = PackRepository.inputMethods()
+        val all = PackRepository.typingMethods()
         val enabled = prefs.getStringSet(PREF_ENABLED, null) ?: return all
         return all.filter { it.id in enabled }.ifEmpty { all }
     }
 
     /** Switch to an input method, falling back to the first enabled one. */
-    private fun activate(id: String?) {
+    private fun activate(id: String?, remember: Boolean = true) {
         finishComposing()
         val enabled = enabledInputMethods()
         val im = enabled.firstOrNull { it.id == id } ?: enabled.firstOrNull() ?: return
@@ -80,24 +125,24 @@ class UnsignedKeyboardService : InputMethodService() {
 
         inputMethod = im
         layout = imLayout
+        englishDictionary = im.dictionaryId?.takeIf { english }?.let { PackRepository.englishDictionary(this, it) }
         alphabet = im.transliterationId
             ?.takeIf { imLayout.input == LayoutInput.LATIN }
             ?.let { Engine.inputAlphabet(it) }
             .orEmpty()
-        prefs.edit().putString(PREF_INPUT_METHOD, im.id).apply()
+        if (remember && !incognito && !im.fallback) prefs.edit().putString(PREF_INPUT_METHOD, im.id).apply()
 
         keyboardView.setInputMethods(enabled, im.id)
         keyboardView.setLayout(imLayout, im.shortLabel)
-        keyboardView.setSuggestionStripVisible(suggestionsEnabled && im.transliterationId != null && alphabet.isNotEmpty())
-        keyboardView.setCandidates(emptyList())
+        updateSuggestionUi()
     }
 
     /** Maps the language setting of versions before packs to the matching input method. */
     private fun legacyInputMethod(): String = when (prefs.getString("language", null)) {
-        "hindi" -> "org.unsigned.input.hi.phonetic"
-        "bangla", "bengali" -> "org.unsigned.input.bn.phonetic"
-        "english" -> "org.unsigned.input.en"
-        else -> "org.unsigned.input.as.phonetic"
+        "hindi" -> "in.unsigned.input.hi.phonetic"
+        "bangla", "bengali" -> "in.unsigned.input.bn.phonetic"
+        "english" -> ENGLISH_INPUT_METHOD
+        else -> "in.unsigned.input.as.phonetic"
     }
 
     private fun switchToNext() {
@@ -111,7 +156,10 @@ class UnsignedKeyboardService : InputMethodService() {
         val ic = currentInputConnection ?: return
         val transliteration = inputMethod?.transliterationId
 
-        if (transliteration != null && alphabet.isNotEmpty() && text.all { it in alphabet }) {
+        val hasComposition = composing.isNotEmpty()
+        val canTransliterate = transliteration != null && acceptsTransliteration(text, alphabet, hasComposition)
+        val startsOrContinuesEnglish = englishDictionary != null && suggestionsEnabled && acceptsEnglishComposition(text, hasComposition)
+        if (canTransliterate || startsOrContinuesEnglish) {
             composing.append(text)
             showComposing(ic)
             return
@@ -152,19 +200,21 @@ class UnsignedKeyboardService : InputMethodService() {
         }
     }
 
-    /** Shows the best candidate for the composing text in the field, and the rest in the strip. */
+    /** Phonetic input shows its best transliteration. English stays verbatim until a tap. */
     private fun showComposing(ic: InputConnection) {
         val im = inputMethod ?: return
         val typed = composing.toString()
-        val list = if (suggestionsEnabled) {
-            val json = JSONArray(Engine.candidates(im.id, typed, CANDIDATE_LIMIT))
-            (0 until json.length()).map { json.getJSONObject(it).getString("text") }
-        } else {
-            emptyList()
+        val list = when {
+            !suggestionsEnabled -> emptyList()
+            english -> englishDictionary?.compose(typed, CANDIDATE_LIMIT).orEmpty()
+            else -> {
+                val json = JSONArray(Engine.candidates(im.id, typed, CANDIDATE_LIMIT))
+                (0 until json.length()).map { json.getJSONObject(it).getString("text") }
+            }
         }
-        val shown = list.firstOrNull()
+        val shown = if (english) typed else (list.firstOrNull()
             ?: im.transliterationId?.let { Engine.transliterate(it, typed) }
-            ?: typed
+            ?: typed)
         setCandidates(list)
         ic.setComposingText(shown, 1)
     }
@@ -176,6 +226,7 @@ class UnsignedKeyboardService : InputMethodService() {
 
     /** Commits a candidate from the strip, followed by a space. */
     private fun pickCandidate(index: Int) {
+        if (!suggestionsEnabled || composing.isEmpty()) return
         val ic = currentInputConnection ?: return
         val text = candidates.getOrNull(index) ?: return
         ic.setComposingText(text, 1)
@@ -215,6 +266,7 @@ class UnsignedKeyboardService : InputMethodService() {
         const val PREF_INPUT_METHOD = "input_method"
         const val PREF_ENABLED = "enabled_input_methods"
         const val PREF_SUGGESTIONS = "suggestions"
+        private const val ENGLISH_INPUT_METHOD = "in.unsigned.input.en"
         private const val CANDIDATE_LIMIT = 8
     }
 }

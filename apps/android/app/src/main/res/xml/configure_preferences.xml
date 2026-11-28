@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="@string/settings_languages" app:iconSpaceReserved="false">
+        <Preference
+            android:key="input_method"
+            android:persistent="false"
+            android:title="@string/settings_current_style"
+            app:iconSpaceReserved="false" />
+        <Preference
+            android:key="enabled_input_methods"
+            android:persistent="false"
+            android:title="@string/settings_globe_styles"
+            app:iconSpaceReserved="false" />
+        <Preference
+            android:key="enable_keyboard"
+            android:title="@string/settings_keyboard_setup"
+            android:summary="@string/settings_keyboard_setup_summary"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/settings_appearance" app:iconSpaceReserved="false">
+        <ListPreference
+            android:key="theme"
+            android:title="@string/settings_theme"
+            android:entries="@array/theme_names"
+            android:entryValues="@array/theme_codes"
+            android:defaultValue="SYSTEM"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/settings_typing_privacy" app:iconSpaceReserved="false">
+        <SwitchPreferenceCompat
+            android:key="suggestions"
+            android:title="@string/settings_suggestions"
+            android:summary="@string/settings_suggestions_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            android:key="incognito_mode"
+            android:title="@string/settings_incognito"
+            android:summary="@string/settings_incognito_summary"
+            android:defaultValue="false"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            android:key="vibration"
+            android:title="@string/settings_vibration"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            android:key="sound"
+            android:title="@string/settings_sound"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/settings_advanced" app:iconSpaceReserved="false">
+        <Preference
+            android:key="language_resources"
+            android:title="@string/settings_resources"
+            android:summary="@string/settings_resources_summary"
+            app:iconSpaceReserved="false" />
+        <Preference
+            android:key="version"
+            android:title="@string/settings_version"
+            android:selectable="false"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

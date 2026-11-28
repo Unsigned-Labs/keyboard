@@ -7,7 +7,7 @@
     "native_name": "অসমীয়া"
   },
   "resource": {
-    "id": "org.unsigned.input.as.phonetic",
+    "id": "in.unsigned.input.as.phonetic",
     "kind": "input_method",
     "version": "1.0.0",
     "engine": {
@@ -20,8 +20,8 @@
   "input_method": {
     "name": "অসমীয়া (ফ'নেটিক)",
     "short_label": "অ",
-    "layout": "org.unsigned.layout.qwerty",
-    "transliteration": "org.unsigned.transliteration.as",
-    "dictionary": "org.unsigned.dictionary.as"
+    "layout": "in.unsigned.layout.qwerty",
+    "transliteration": "in.unsigned.transliteration.as",
+    "dictionary": "in.unsigned.dictionary.as"
   }
 }

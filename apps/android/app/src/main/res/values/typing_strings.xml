@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unsigned_spell_checker">Unsigned Keyboard spell checker</string>
+    <string name="spell_checker_english">English</string>
+    <string name="spell_checker_assamese">Assamese (no spelling marks)</string>
+    <string name="keyboard_incognito">Incognito</string>
+    <string name="keyboard_incognito_enable">Turn on incognito</string>
+    <string name="keyboard_incognito_disable">Turn off incognito</string>
+    <string name="keyboard_incognito_required">Incognito required for this field</string>
+</resources>

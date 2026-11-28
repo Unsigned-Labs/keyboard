@@ -48,6 +48,7 @@ class UnsignedKeyboardView @JvmOverloads constructor(
         fun onNextInputMethod()
         fun onInputMethodSelected(id: String)
         fun onCandidateSelected(index: Int)
+        fun onToggleIncognito()
     }
 
     private var listener: Listener? = null
@@ -64,7 +65,9 @@ class UnsignedKeyboardView @JvmOverloads constructor(
     private var candidates: List<String> = emptyList()
     private var candidateCells: List<Pair<RectF, Int>> = emptyList()
     private var showStrip = true
-    private val stripHeight get() = if (showStrip) 40 * context.resources.displayMetrics.density else 0f
+    private var incognito = false
+    private var incognitoRequired = false
+    private val stripHeight get() = if (showStrip || incognito) 40 * context.resources.displayMetrics.density else 0f
     private val candidatePaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val candidateBoldPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val separatorPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -154,16 +157,28 @@ class UnsignedKeyboardView @JvmOverloads constructor(
         currentInputMethodId = currentId
     }
 
-    /** Suggestions for the word being typed; the first one is what space will commit. */
+    /** Suggestions for the word being typed. */
     fun setCandidates(list: List<String>) {
         candidates = list
+        candidateCells = emptyList()
         invalidate()
     }
 
     fun setSuggestionStripVisible(visible: Boolean) {
         if (visible == showStrip) return
         showStrip = visible
+        candidateCells = emptyList()
         requestLayout()
+        invalidate()
+    }
+
+    fun setPrivacyState(active: Boolean, required: Boolean) {
+        val previousHeight = stripHeight
+        incognito = active
+        incognitoRequired = required
+        if (active) candidateCells = emptyList()
+        if (stripHeight != previousHeight) requestLayout()
+        invalidate()
     }
 
     fun setTheme(theme: KeyboardTheme) {
@@ -278,7 +293,12 @@ class UnsignedKeyboardView @JvmOverloads constructor(
 
     /** Lays candidates out left to right at their natural width, as many as fit. */
     private fun drawCandidates(canvas: Canvas) {
-        if (!showStrip) return
+        if (incognito) {
+            val y = stripHeight / 2f - (candidatePaint.descent() + candidatePaint.ascent()) / 2f
+            canvas.drawText(context.getString(R.string.keyboard_incognito), width / 2f, y, candidatePaint)
+            return
+        }
+        if (!showStrip || candidates.isEmpty()) return
         val cells = mutableListOf<Pair<RectF, Int>>()
         var x = 0f
         val h = stripHeight
@@ -423,6 +443,14 @@ class UnsignedKeyboardView @JvmOverloads constructor(
         })
         popupView.addView(item("⚙  Settings") {
             context.startActivity(Intent(context, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        })
+        val privacyLabel = when {
+            incognitoRequired -> R.string.keyboard_incognito_required
+            incognito -> R.string.keyboard_incognito_disable
+            else -> R.string.keyboard_incognito_enable
+        }
+        popupView.addView(item(context.getString(privacyLabel)) { listener?.onToggleIncognito() }.apply {
+            isEnabled = !incognitoRequired
         })
         popup.showAtLocation(this, Gravity.CENTER, 0, 0)
     }

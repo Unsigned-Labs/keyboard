@@ -7,7 +7,7 @@
     "native_name": "हिन्दी"
   },
   "resource": {
-    "id": "org.unsigned.input.hi.phonetic",
+    "id": "in.unsigned.input.hi.phonetic",
     "kind": "input_method",
     "version": "1.0.0",
     "engine": {
@@ -20,8 +20,8 @@
   "input_method": {
     "name": "हिन्दी (फ़ोनेटिक)",
     "short_label": "हि",
-    "layout": "org.unsigned.layout.qwerty",
-    "transliteration": "org.unsigned.transliteration.hi",
-    "dictionary": "org.unsigned.dictionary.hi"
+    "layout": "in.unsigned.layout.qwerty",
+    "transliteration": "in.unsigned.transliteration.hi",
+    "dictionary": "in.unsigned.dictionary.hi"
   }
 }

@@ -33,7 +33,7 @@ A custom scheme is just another transliteration pack plus an input method that p
   "format_version": 1,
   "language": { "tag": "as", "script": "Beng", "name": "Assamese", "native_name": "অসমীয়া" },
   "resource": {
-    "id": "org.unsigned.transliteration.as",
+    "id": "in.unsigned.transliteration.as",
     "kind": "transliteration",
     "version": "1.0.0",
     "engine": { "abi": 1, "minimum_runtime_version": "0.1.0" },
@@ -81,8 +81,8 @@ A custom scheme is just another transliteration pack plus an input method that p
 "input_method": {
   "name": "অসমীয়া (ফ'নেটিক)",
   "short_label": "অ",
-  "layout": "org.unsigned.layout.qwerty",
-  "transliteration": "org.unsigned.transliteration.as"
+  "layout": "in.unsigned.layout.qwerty",
+  "transliteration": "in.unsigned.transliteration.as"
 }
 ```
 

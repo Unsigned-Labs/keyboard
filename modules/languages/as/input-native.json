@@ -7,7 +7,7 @@
     "native_name": "অসমীয়া"
   },
   "resource": {
-    "id": "org.unsigned.input.as.native",
+    "id": "in.unsigned.input.as.native",
     "kind": "input_method",
     "version": "1.0.0",
     "engine": {
@@ -20,6 +20,6 @@
   "input_method": {
     "name": "অসমীয়া (বৰ্ণমালা)",
     "short_label": "ক",
-    "layout": "org.unsigned.layout.as.native"
+    "layout": "in.unsigned.layout.as.native"
   }
 }

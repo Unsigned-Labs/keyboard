@@ -7,7 +7,7 @@
     "native_name": "বাংলা"
   },
   "resource": {
-    "id": "org.unsigned.transliteration.bn",
+    "id": "in.unsigned.transliteration.bn",
     "kind": "transliteration",
     "version": "1.0.0",
     "engine": {

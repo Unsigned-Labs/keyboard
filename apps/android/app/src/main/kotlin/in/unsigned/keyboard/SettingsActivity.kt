@@ -1,35 +1,54 @@
 package `in`.unsigned.keyboard
 
+import android.content.ContentResolver
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.ListPreference
-import androidx.preference.MultiSelectListPreference
-import androidx.preference.Preference
-import androidx.preference.PreferenceCategory
-import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import `in`.unsigned.keyboard.packs.PackRepository
+import `in`.unsigned.keyboard.settings.ConfigureFragment
+import `in`.unsigned.keyboard.settings.LanguageResourcesFragment
+import `in`.unsigned.keyboard.settings.RefreshableSettings
+import `in`.unsigned.keyboard.theme.AppTheme
 
 class SettingsActivity : AppCompatActivity() {
+    private val prefs get() = PreferenceManager.getDefaultSharedPreferences(this)
+    private val onThemeChanged = SharedPreferences.OnSharedPreferenceChangeListener { shared, key ->
+        if (key == AppTheme.PREF_KEY || key == null) {
+            AppTheme.apply(delegate, shared.getString(AppTheme.PREF_KEY, null))
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppTheme.apply(delegate, AppTheme.savedMode(this))
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Unsigned Keyboard Settings"
-        PackRepository.ensureLoaded(this)
+        supportFragmentManager.addOnBackStackChangedListener(::updateTitle)
+        updateTitle()
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.settings_container, SettingsFragment())
+                .setReorderingAllowed(true)
+                .replace(R.id.settings_container, ConfigureFragment())
                 .commit()
             importFromIntent(intent)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        prefs.registerOnSharedPreferenceChangeListener(onThemeChanged)
+        AppTheme.apply(delegate, AppTheme.savedMode(this))
+    }
+
+    override fun onStop() {
+        prefs.unregisterOnSharedPreferenceChangeListener(onThemeChanged)
+        super.onStop()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -37,106 +56,53 @@ class SettingsActivity : AppCompatActivity() {
         importFromIntent(intent)
     }
 
-    /** "Open with" a pack file from a file manager. */
     private fun importFromIntent(intent: Intent?) {
         if (intent?.action != Intent.ACTION_VIEW) return
-        val uri = intent.data ?: return
+        val uri = intent.data?.takeIf { it.scheme == ContentResolver.SCHEME_CONTENT } ?: return
         importPack(uri)
     }
 
-    fun importPack(uri: Uri) {
+    internal fun importPack(uri: Uri) {
         PackRepository.import(this, uri)
-            .onSuccess { Toast.makeText(this, "Installed ${it.name} ${it.version}", Toast.LENGTH_LONG).show() }
+            .onSuccess {
+                Toast.makeText(this, getString(R.string.settings_resource_imported_toast, it.name), Toast.LENGTH_LONG).show()
+            }
             .onFailure { error ->
-                AlertDialog.Builder(this)
-                    .setTitle("Couldn't install this pack")
-                    .setMessage(error.message ?: error.toString())
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.settings_resource_import_error)
+                    .setMessage(R.string.settings_resource_import_error_message)
+                    .setNeutralButton(R.string.settings_resource_details) { _, _ ->
+                        MaterialAlertDialogBuilder(this)
+                            .setTitle(R.string.settings_resource_details)
+                            .setMessage(error.message ?: error.javaClass.simpleName)
+                            .setPositiveButton(android.R.string.ok, null)
+                            .show()
+                    }
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
             }
-        (supportFragmentManager.findFragmentById(R.id.settings_container) as? SettingsFragment)?.refresh()
+        (supportFragmentManager.findFragmentById(R.id.settings_container) as? RefreshableSettings)?.refresh()
+    }
+
+    internal fun showLanguageResources() {
+        supportFragmentManager.beginTransaction()
+            .setReorderingAllowed(true)
+            .replace(R.id.settings_container, LanguageResourcesFragment())
+            .addToBackStack("language_resources")
+            .commit()
+    }
+
+    private fun updateTitle() {
+        val title = if (supportFragmentManager.backStackEntryCount == 0) {
+            R.string.settings_configure
+        } else {
+            R.string.settings_resources
+        }
+        supportActionBar?.setTitle(title)
     }
 
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
         return true
-    }
-
-    class SettingsFragment : PreferenceFragmentCompat() {
-        private val pickPack = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-            if (uri != null) (activity as? SettingsActivity)?.importPack(uri)
-        }
-
-        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-            setPreferencesFromResource(R.xml.preferences, rootKey)
-
-            findPreference<Preference>("enable_keyboard")?.setOnPreferenceClickListener {
-                val imm = requireContext().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showInputMethodPicker()
-                true
-            }
-            findPreference<Preference>("import_pack")?.setOnPreferenceClickListener {
-                pickPack.launch(arrayOf("application/json", "application/octet-stream", "text/plain"))
-                true
-            }
-            findPreference<Preference>("version")?.summary = BuildConfig.VERSION_NAME
-            refresh()
-        }
-
-        fun refresh() {
-            val context = context ?: return
-            val inputMethods = PackRepository.inputMethods()
-            val names = inputMethods.map { it.name }.toTypedArray()
-            val ids = inputMethods.map { it.id }.toTypedArray()
-
-            findPreference<ListPreference>(UnsignedKeyboardService.PREF_INPUT_METHOD)?.apply {
-                entries = names
-                entryValues = ids
-                summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
-            }
-            findPreference<MultiSelectListPreference>(UnsignedKeyboardService.PREF_ENABLED)?.apply {
-                entries = names
-                entryValues = ids
-                if (values.isEmpty()) values = ids.toSet()
-                summary = "${values.count { it in ids }} of ${ids.size} enabled"
-                setOnPreferenceChangeListener { _, new ->
-                    summary = "${(new as Set<*>).count { it in ids }} of ${ids.size} enabled"
-                    true
-                }
-            }
-
-            val category = findPreference<PreferenceCategory>("packs") ?: return
-            for (i in category.preferenceCount - 1 downTo 0) {
-                val p = category.getPreference(i)
-                if (p.key != "import_pack") category.removePreference(p)
-            }
-            for (pack in PackRepository.packs()) {
-                category.addPreference(Preference(context).apply {
-                    key = "pack:${pack.id}"
-                    title = pack.name
-                    summary = buildString {
-                        append(pack.kind.replace('_', ' '))
-                        append(" · ").append(pack.version)
-                        append(if (pack.imported) " · imported" else " · built in")
-                        append("\n").append(pack.id)
-                    }
-                    isIconSpaceReserved = false
-                    if (pack.imported) {
-                        setOnPreferenceClickListener {
-                            AlertDialog.Builder(context)
-                                .setTitle("Remove ${pack.name}?")
-                                .setMessage("A built-in pack with the same id, if any, is used again.")
-                                .setPositiveButton("Remove") { _, _ ->
-                                    PackRepository.remove(context, pack.id)
-                                    refresh()
-                                }
-                                .setNegativeButton(android.R.string.cancel, null)
-                                .show()
-                            true
-                        }
-                    }
-                })
-            }
-        }
     }
 }

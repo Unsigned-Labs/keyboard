@@ -14,7 +14,7 @@ export interface Candidate {
   kind: "word" | "transliteration" | "completion" | "latin";
 }
 
-export const DEFAULT_INPUT_METHOD = "org.unsigned.input.as.phonetic";
+export const DEFAULT_INPUT_METHOD = "in.unsigned.input.as.phonetic";
 
 let indexPromise: Promise<PackIndexEntry[]> | null = null;
 

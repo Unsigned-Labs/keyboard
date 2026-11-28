@@ -35,12 +35,21 @@ LANGUAGES = {
 }
 
 MIN_COUNT = 5
+APOSTROPHES = "'’ʼ"
+ASSAMESE_MARKER_TRANSLATION = str.maketrans({c: "'" for c in APOSTROPHES})
 
 
 def main():
     tag, dump = sys.argv[1], sys.argv[2]
     lang = LANGUAGES[tag]
-    token = re.compile(f"[{lang['range']}\u200c\u200d]+")
+    run = f"[{lang['range']}\u200c\u200d]+"
+    token = re.compile(run)
+    if tag == "as":
+        script = [chr(c) for c in range(0x0980, 0x0A00)]
+        letters = "".join(c for c in script if unicodedata.category(c).startswith("L"))
+        marks = "".join(c for c in script if unicodedata.category(c).startswith("M"))
+        inner_marker = f"(?<=[{letters}{marks}])[{APOSTROPHES}](?=[{letters}])"
+        token = re.compile(f"{run}(?:{inner_marker}{run})*")
     starts_with_mark = re.compile(f"^[{lang['marks']}]")
     # A nukta belongs right after a consonant; after a vowel sign it's a typo in the source.
     misplaced_nukta = re.compile("[\u09be-\u09cc\u093e-\u094c][\u09bc\u093c]")
@@ -57,6 +66,10 @@ def main():
     words = collections.Counter()
     for raw, count in counts.items():
         word = unicodedata.normalize("NFC", raw.replace("\u200c", "").replace("\u200d", ""))
+        if any(c in APOSTROPHES for c in word):
+            if tag != "as" or not token.fullmatch(word):
+                continue
+            word = word.translate(ASSAMESE_MARKER_TRANSLATION)
         if not word or starts_with_mark.match(word):
             continue
         if len(word) == 1 and word not in lang["vowels"]:
@@ -67,7 +80,7 @@ def main():
             continue
         if any(c in lang["reject"] for c in word):
             continue
-        if any(unicodedata.category(c)[0] in "NP" for c in word):
+        if any(c != "'" and unicodedata.category(c)[0] in "NP" for c in word):
             continue
         words[word] += count
 
@@ -77,7 +90,7 @@ def main():
         "language": {"tag": tag, "script": lang["script"], "name": lang["name"],
                      "native_name": lang["native_name"]},
         "resource": {
-            "id": f"org.unsigned.dictionary.{tag}",
+            "id": f"in.unsigned.dictionary.{tag}",
             "kind": "dictionary",
             "version": "1.0.0",
             "engine": {"abi": 1, "minimum_runtime_version": "0.1.0"},

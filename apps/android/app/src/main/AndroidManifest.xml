@@ -43,6 +43,17 @@
                 android:resource="@xml/method" />
         </service>
 
+        <!-- Optional system spell checker, selected separately from the input method. -->
+        <service
+            android:name=".UnsignedSpellCheckerService"
+            android:label="@string/unsigned_spell_checker"
+            android:permission="android.permission.BIND_TEXT_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.textservice.SpellCheckerService" />
+            </intent-filter>
+            <meta-data android:name="android.view.textservice.scs" android:resource="@xml/spell_checker" />
+        </service>
     </application>
 
 </manifest>

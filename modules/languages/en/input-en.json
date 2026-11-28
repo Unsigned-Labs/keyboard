@@ -7,7 +7,7 @@
     "native_name": "English"
   },
   "resource": {
-    "id": "org.unsigned.input.en",
+    "id": "in.unsigned.input.en",
     "kind": "input_method",
     "version": "1.0.0",
     "engine": {
@@ -20,6 +20,7 @@
   "input_method": {
     "name": "English",
     "short_label": "EN",
-    "layout": "org.unsigned.layout.qwerty"
+    "layout": "in.unsigned.layout.qwerty",
+    "dictionary": "in.unsigned.dictionary.en"
   }
 }

@@ -7,7 +7,7 @@
     "native_name": "অসমীয়া"
   },
   "resource": {
-    "id": "org.unsigned.layout.as.native",
+    "id": "in.unsigned.layout.as.native",
     "kind": "keyboard_layout",
     "version": "1.0.0",
     "engine": {
@@ -68,7 +68,10 @@
           {
             "keys": [
               {
-                "output": "অ"
+                "output": "অ",
+                "long_press": [
+                  "'"
+                ]
               },
               {
                 "output": "আ",

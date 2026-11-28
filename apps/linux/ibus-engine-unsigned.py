@@ -11,9 +11,9 @@ from gi.repository import IBus, GLib
 
 # IBus engine name -> input method pack id.
 INPUT_METHODS = {
-    "unsigned-assamese": "org.unsigned.input.as.phonetic",
-    "unsigned-bangla": "org.unsigned.input.bn.phonetic",
-    "unsigned-hindi": "org.unsigned.input.hi.phonetic",
+    "unsigned-assamese": "in.unsigned.input.as.phonetic",
+    "unsigned-bangla": "in.unsigned.input.bn.phonetic",
+    "unsigned-hindi": "in.unsigned.input.hi.phonetic",
 }
 
 SELECT_KEYS = {getattr(IBus, f"KEY_{n}"): n - 1 for n in range(1, 10)}

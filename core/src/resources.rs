@@ -213,8 +213,31 @@ impl PackStore {
             .dictionary
             .as_deref()
             .and_then(|id| self.dictionaries.get(id));
-        let exact = transliterator.transliterate(input);
-        model.candidates(input, &exact, dictionary, limit)
+        // A scheme may use the ASCII apostrophe as a vowel mark inside a word. At the edges
+        // it is punctuation: rank the enclosed word and put the quotes back unchanged.
+        let marks_apostrophe = transliterator
+            .get_schema()
+            .vowel_marks
+            .get("'")
+            .is_some_and(|inputs| inputs.iter().any(|s| s == "'"));
+        let (unquoted, core) = if marks_apostrophe {
+            let unquoted = input.trim_start_matches('\'');
+            (unquoted, unquoted.trim_end_matches('\''))
+        } else {
+            (input, input)
+        };
+        if core.is_empty() || core == input {
+            let exact = transliterator.transliterate(input);
+            return model.candidates(input, &exact, dictionary, limit);
+        }
+        let lead = &input[..input.len() - unquoted.len()];
+        let trail = &unquoted[core.len()..];
+        let exact = transliterator.transliterate(core);
+        let mut candidates = model.candidates(core, &exact, dictionary, limit);
+        for candidate in &mut candidates {
+            candidate.text = format!("{lead}{}{trail}", candidate.text);
+        }
+        candidates
     }
 }
 
@@ -231,10 +254,73 @@ mod tests {
     }
 
     #[test]
+    fn assamese_phonetic_apostrophe_marks_the_vowel() {
+        let mut store = PackStore::new();
+        let scheme = store.load(ASSAMESE).unwrap().id;
+        assert_eq!(store.transliterate(&scheme, "noh'le h'y"), "নহ'লে হ'য়");
+        assert_eq!(store.transliterate(&scheme, "s'k"), "চ'ক");
+        assert!(store.input_alphabet(&scheme).contains('\''));
+    }
+
+    #[test]
+    fn assamese_phonetic_quotes_keep_dictionary_ranking() {
+        let mut store = PackStore::new();
+        store.load(ASSAMESE).unwrap();
+        store
+            .load(include_bytes!(
+                "../../modules/languages/as/input-phonetic.json"
+            ))
+            .unwrap();
+        store
+            .load(include_bytes!("../../modules/languages/as/dictionary.json"))
+            .unwrap();
+        let im = "in.unsigned.input.as.phonetic";
+        assert_eq!(store.convert(im, "'nodi' ‘nodi’"), "'নদী' ‘নদী’");
+        assert_eq!(store.candidates(im, "'nodi'", 2)[0].text, "'নদী'");
+    }
+
+    #[test]
+    fn assamese_dictionary_completes_words_with_the_vowel_marker() {
+        let mut store = PackStore::new();
+        store.load(ASSAMESE).unwrap();
+        store
+            .load(include_bytes!(
+                "../../modules/languages/as/input-phonetic.json"
+            ))
+            .unwrap();
+        store
+            .load(include_bytes!("../../modules/languages/as/dictionary.json"))
+            .unwrap();
+        let im = "in.unsigned.input.as.phonetic";
+        assert!(store
+            .candidates(im, "noh'l", 8)
+            .iter()
+            .any(|c| { c.kind == crate::CandidateKind::Completion && c.text == "নহ'লে" }));
+        assert_eq!(store.convert(im, "noh'le h'y"), "নহ'লে হ'য়");
+    }
+
+    #[test]
+    fn assamese_native_vowel_has_an_ascii_marker_long_press() {
+        let mut store = PackStore::new();
+        let id = store
+            .load(include_bytes!(
+                "../../modules/languages/as/layout-native.json"
+            ))
+            .unwrap()
+            .id;
+        let Some(Pack::KeyboardLayout(module)) = store.get(&id) else {
+            panic!("expected a layout")
+        };
+        assert!(module.layout.pages[0].rows[0].keys.iter().any(|key| {
+            key.output.as_deref() == Some("অ") && key.long_press.iter().any(|output| output == "'")
+        }));
+    }
+
+    #[test]
     fn store_transliterates_by_pack_id_and_keeps_newest_version() {
         let mut store = PackStore::new();
         let info = store.load(ASSAMESE).unwrap();
-        assert_eq!(info.id, "org.unsigned.transliteration.as");
+        assert_eq!(info.id, "in.unsigned.transliteration.as");
         assert_eq!(store.transliterate(&info.id, "nomoskar"), "নমস্কাৰ");
 
         let older = String::from_utf8(ASSAMESE.to_vec()).unwrap().replacen(
@@ -282,17 +368,17 @@ mod tests {
         }
         assert_eq!(
             store.convert(
-                "org.unsigned.input.as.phonetic",
+                "in.unsigned.input.as.phonetic",
                 "moi nodi, korisil.  mo.i (kotha)"
             ),
             "মই নদী, কৰিছিল.  মই (কথা)"
         );
         assert_eq!(
-            store.convert("org.unsigned.input.hi.phonetic", "aap kaise hain?"),
+            store.convert("in.unsigned.input.hi.phonetic", "aap kaise hain?"),
             "आप कैसे हैं?"
         );
         assert!(store
-            .get("org.unsigned.layout.as.native")
+            .get("in.unsigned.layout.as.native")
             .unwrap()
             .to_json()
             .contains("after_consonant"));

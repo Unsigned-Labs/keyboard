@@ -17,7 +17,7 @@ interface Language {
   nativeName: string;
 }
 
-const DEFAULT_INPUT_METHOD = "org.unsigned.input.as.phonetic";
+const DEFAULT_INPUT_METHOD = "in.unsigned.input.as.phonetic";
 
 const Home = () => {
   const [inputMethodId, setInputMethodId] = useState(DEFAULT_INPUT_METHOD);

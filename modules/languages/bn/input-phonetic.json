@@ -7,7 +7,7 @@
     "native_name": "বাংলা"
   },
   "resource": {
-    "id": "org.unsigned.input.bn.phonetic",
+    "id": "in.unsigned.input.bn.phonetic",
     "kind": "input_method",
     "version": "1.0.0",
     "engine": {
@@ -20,8 +20,8 @@
   "input_method": {
     "name": "বাংলা (ফোনেটিক)",
     "short_label": "বা",
-    "layout": "org.unsigned.layout.qwerty",
-    "transliteration": "org.unsigned.transliteration.bn",
-    "dictionary": "org.unsigned.dictionary.bn"
+    "layout": "in.unsigned.layout.qwerty",
+    "transliteration": "in.unsigned.transliteration.bn",
+    "dictionary": "in.unsigned.dictionary.bn"
   }
 }

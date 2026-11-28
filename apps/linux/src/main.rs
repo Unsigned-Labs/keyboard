@@ -20,7 +20,7 @@ use transliterator::{Pack, PackStore};
 
 include!(concat!(env!("OUT_DIR"), "/bundled_packs.rs"));
 
-const DEFAULT_INPUT_METHOD: &str = "org.unsigned.input.as.phonetic";
+const DEFAULT_INPUT_METHOD: &str = "in.unsigned.input.as.phonetic";
 const CANDIDATE_LIMIT: usize = 9;
 
 fn pack_dirs() -> Vec<PathBuf> {
@@ -82,8 +82,8 @@ fn input_methods(store: &PackStore) -> String {
 
 fn legacy_input_method(language: &str) -> &'static str {
     match language {
-        "hindi" => "org.unsigned.input.hi.phonetic",
-        "bangla" | "bengali" => "org.unsigned.input.bn.phonetic",
+        "hindi" => "in.unsigned.input.hi.phonetic",
+        "bangla" | "bengali" => "in.unsigned.input.bn.phonetic",
         _ => DEFAULT_INPUT_METHOD,
     }
 }
